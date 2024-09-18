@@ -3,6 +3,7 @@ classdef SetEnvironment
         FloorImage = 'WhiteFloor.jpg';
         WallImage0 = 'Labwall.jpg';
         WallImage1 = 'LabWall1.jpg';
+        ExitSign = 'ExitSign.jpg';
         TableFile = 'tableBrown2.1x1.4x0.5m.ply';
         FireExtinguisherFile = 'fireExtinguisher.ply';
         ManFile = 'personMaleConstruction.ply';
@@ -23,6 +24,8 @@ classdef SetEnvironment
             imgwall00 = imrotate(imgwall0, 180);
             imgwall1 = imread(obj.WallImage1);
             imgwall10 = imrotate(imgwall1, -90);
+            imgExitSign = imread(obj.ExitSign);
+            imgExitSign1 = imrotate(imgExitSign, -90);
 
             % Display floor
             surf([-3, -3; 2.5, 2.5], ...
@@ -44,6 +47,14 @@ classdef SetEnvironment
                  [0.0, 0.0; 2.5, 2.5], ...
                  'CData', imgwall00, ...
                  'FaceColor', 'texturemap');
+            
+            % Display Exit Sign
+            surf([-1.8, -1.8; -1.4, -1.4], ...
+                 [2.4, 2.4; 2.4, 2.4], ...
+                 [2, 2.2; 2, 2.2], ...
+                 'CData', imgExitSign1, ...
+                 'FaceColor', 'texturemap');
+            hold on;
         end
         
         function placeObjects(obj)
@@ -87,6 +98,11 @@ classdef SetEnvironment
                  rotationMatrix = trotz(pi/2); % Example rotation
                  transformed = (rotationMatrix(1:3, 1:3) * centered')';
                  set(obj, 'Vertices', transformed + pos);
+             end
+
+             sortingTable = [-2,-2; -2,-1.66;-2,-1.33;-2,-1];
+             for i = 1:size(sortingTable)
+                 PlaceObject('bookcaseTwoShelves0.5x0.2x0.5m.ply', [sortingTable(i,:), 0]);
              end
         end
     end
