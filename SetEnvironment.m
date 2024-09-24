@@ -60,6 +60,9 @@ classdef SetEnvironment
         function placeObjects(obj)
             % Place table
             PlaceObject(obj.TableFile, [-0.5, -1.5, 0]);
+
+            % Place Camera
+            PlaceObject('Tripod.ply', [-0.5,-0.5,0]);
             
             % Place fire extinguisher
             PlaceObject(obj.FireExtinguisherFile, [-1.5, 2.4, 0.5]);
