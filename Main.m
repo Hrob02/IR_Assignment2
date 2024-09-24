@@ -2,4 +2,5 @@
 env = SetEnvironment();
 
 % Initialize the robot
-%robot = LinearUR3e();
+robot = DobotMagician(transl(0,-1.5,0.5));
+
