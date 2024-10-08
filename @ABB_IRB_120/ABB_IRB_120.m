@@ -9,9 +9,9 @@ classdef ABB_IRB_120 < RobotBaseClass
         % constructor
         function obj = ABB_IRB_120(baseTr)
             obj.CreateModel();
-            if nargin == 1			
-				obj.model.base = obj.model.base.T * baseTr * troty(pi/2);
-            end
+           			
+		    obj.model.base = obj.model.base.T * baseTr * troty(pi/2);
+            
             obj.PlotAndColourRobot();
         end
 
