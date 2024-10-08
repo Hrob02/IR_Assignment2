@@ -27,6 +27,8 @@ classdef SetEnvironment
             imgExitSign = imread(obj.ExitSign);
             imgExitSign1 = imrotate(imgExitSign, -90);
 
+            workspace
+
             % Display floor
             surf([-3, -3; 2.5, 2.5], ...
                  [-3, 2.5; -3, 2.5], ...
@@ -60,6 +62,14 @@ classdef SetEnvironment
         function placeObjects(obj)
             % Place table
             PlaceObject(obj.TableFile, [-0.5, -1.5, 0]);
+
+            blueTable = PlaceObject('tableBlue1x1x0.5m.ply', [-2.1, -1.5, 0]);
+            vertices = get(blueTable, 'Vertices');
+            position = [-2.1, -1.5, 0]; % Update with actual position if necessary
+            centered = vertices - position;
+            rotationMatrix = trotz(pi/2);
+            transformed = (rotationMatrix(1:3, 1:3) * centered')';
+            set(blueTable, 'Vertices', transformed + position);
 
             % Place Camera
             PlaceObject('Tripod.ply', [-0.5,-0.5,0]);
@@ -103,9 +113,15 @@ classdef SetEnvironment
                  set(obj, 'Vertices', transformed + pos);
              end
 
-             sortingTable = [-2,-2; -2,-1.66;-2,-1.33;-2,-1];
+             sortingTable = [-2,-2.05; -2,-1.45];
              for i = 1:size(sortingTable)
-                 PlaceObject('bookcaseTwoShelves0.5x0.2x0.5m.ply', [sortingTable(i,:), 0]);
+                 Shelves = PlaceObject('bookcaseTwoShelves0.5x0.2x0.5m.ply', [sortingTable(i,:), 0.65]);
+                 vertices = get(Shelves, 'Vertices');
+                 pos = [sortingTable(i,:), 0.65]; % Update with actual position if necessary
+                 centered = vertices - pos;
+                 rotationMatrix = trotx(-pi/2); % Example rotation
+                 transformed = (rotationMatrix(1:3, 1:3) * centered')';
+                 set(Shelves, 'Vertices', transformed + pos);
              end
         end
     end
