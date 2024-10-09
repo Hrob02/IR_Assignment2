@@ -26,18 +26,10 @@ title('Workspace Setup'); % Title for the plot
 % Create the environment
 env = SetEnvironment();
 
-<<<<<<< HEAD
 
 %% 
-% Initialize the robot
-robot = DobotMagician(transl(0,-1.5,0.5));
-=======
 % Initialize the DOBOT
 Dobot = DobotMagician(transl(0,-1.5,0.5));
-
-% Initialise the second robot
-% robot2 = ABB_IRB_120(transl(-0.5,-1.5,0.5)*trotx(pi/2)*trotz(pi/2));
->>>>>>> 2d70e8d258e95a71f399a483f51af1f1d8a7a0c4
 
 %%
 robot = LinearABB120();
