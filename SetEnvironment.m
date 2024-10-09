@@ -4,6 +4,7 @@ classdef SetEnvironment
         WallImage0 = 'Labwall.jpg';
         WallImage1 = 'LabWall1.jpg';
         ExitSign = 'ExitSign.jpg';
+        Mat = 'mat.jpg';
         TableFile = 'tableBrown2.1x1.4x0.5m.ply';
         FireExtinguisherFile = 'fireExtinguisher.ply';
         ManFile = 'personMaleConstruction.ply';
@@ -26,6 +27,7 @@ classdef SetEnvironment
             imgwall10 = imrotate(imgwall1, -90);
             imgExitSign = imread(obj.ExitSign);
             imgExitSign1 = imrotate(imgExitSign, -90);
+            imgMat = imread(obj.Mat);
 
             workspace
 
@@ -36,6 +38,12 @@ classdef SetEnvironment
                  'CData', img, ...
                  'FaceColor', 'texturemap');
             hold on;
+
+            surf([-0.75, -0.75; -0.25, -0.25], ...
+                 [-1.3, -0.9; -1.3, -0.9], ...
+                 [0.51, 0.51; 0.51, 0.51], ...
+                 'CData', imgMat, ...
+                 'FaceColor', 'texturemap');
 
             % Display walls
             surf([-3, -3; 2.5, 2.5], ...
@@ -113,11 +121,11 @@ classdef SetEnvironment
                  set(obj, 'Vertices', transformed + pos);
              end
 
-             sortingTable = [-2,-2.05; -2,-1.45];
+             sortingTable = [-2,-2.05,0.65; -2,-1.45,0.65; -0.5,-2.05,0.55];
              for i = 1:size(sortingTable)
-                 Shelves = PlaceObject('bookcaseTwoShelves0.5x0.2x0.5m.ply', [sortingTable(i,:), 0.65]);
+                 Shelves = PlaceObject('bookcaseTwoShelves0.5x0.2x0.5m.ply', [sortingTable(i,:)]);
                  vertices = get(Shelves, 'Vertices');
-                 pos = [sortingTable(i,:), 0.65]; % Update with actual position if necessary
+                 pos = [sortingTable(i,:)]; % Update with actual position if necessary
                  centered = vertices - pos;
                  rotationMatrix = trotx(-pi/2); % Example rotation
                  transformed = (rotationMatrix(1:3, 1:3) * centered')';
