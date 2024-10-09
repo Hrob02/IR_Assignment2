@@ -32,9 +32,9 @@ env = SetEnvironment();
 Dobot = DobotMagician(transl(0,-1.5,0.5));
 
 %%
-robot = LinearABB120();
+robot = LinearABB120(transl(-1.15,-1.15,0.5)*trotz(pi/2));
 
-q = zeros(7);
-robot.model.fkine(q);
+% q = zeros(7);
+% robot.model.fkine(q);
 
 
