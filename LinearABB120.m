@@ -37,16 +37,20 @@ classdef LinearABB120 < RobotBaseClass
             link(2).qlim = [-360 360]*pi/180;
             link(3).qlim = [-90 90]*pi/180;
             link(4).qlim = [-170 170]*pi/180;
-            % link(5).qlim = [-360 360]*pi/180;
-            % link(6).qlim = [-360 360]*pi/180;
-            % link(7).qlim = [-360 360]*pi/180;
+            link(5).qlim = [-360 360]*pi/180;
+            link(6).qlim = [-360 360]*pi/180;
+            link(7).qlim = [-360 360]*pi/180;
             % 
             % % Add Offset
             % link(3).offset = 0;
             % link(5).offset = -pi/2;
 
-            self.model = SerialLink(link, 'name', self.name);
+            self.model = SerialLink(link, 'name', self.plyFileNameStem);
         end
 
+        % Method to get the joint limits % can delete maybe
+        function qlim = getJointLimits(self)
+            qlim = self.model.qlim;
+        end
     end
 end

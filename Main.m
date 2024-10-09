@@ -32,9 +32,16 @@ env = SetEnvironment();
 Dobot = DobotMagician(transl(0,-1.5,0.5));
 
 %%
-robot = LinearABB120(transl(-1.15,-1.15,0.5)*trotz(pi/2));
+% Create an instance of the LinearABB120 robot with the given transformation
+robotModel = LinearABB120(transl(-1.15,-1.15,0.5)*trotz(pi/2));
 
-% q = zeros(7);
-% robot.model.fkine(q);
+% Set step size in radians and chunk size
+stepRads = deg2rad(5);  % Adjust step size as needed (e.g., 5 degrees)
+chunkSize = 5000;       % Adjust chunk size based on memory and accuracy needs
 
+% Instantiate the PointCloud class
+pointCloudObj = PointCloud(robotModel, stepRads, chunkSize);
+
+% Generate and visualize the point cloud of the robot workspace
+pointCloud = pointCloudObj.createPointCloud();
 
