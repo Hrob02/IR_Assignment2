@@ -31,13 +31,32 @@ env = SetEnvironment();
 % Initialize the DOBOT
 Dobot = DobotMagician(transl(0,-1.5,0.5));
 
-%%
+%% Move ABB120 robot to specific q value position
 % Create an instance of the LinearABB120 robot
 robot = ABB120();
 
 % Define the desired joint configuration
 q = [-0.4 0 0 0 0 0 0 0];  % Example joint configuration
 
-% Use the `animate` method to move the robot to the desired configuration
 robot.model.animate(q);
+
+%% Animation between different q values using jtraj (need to change for collision avoidance)
+
+% Create an instance of the ABB120 robot
+robot = ABB120();
+
+% Create an instance of the RobotMovement class
+robotMovement = RobotMovement(robot, 50);
+
+% Define initial and final joint configurations
+q_initial = zeros(1, 7);
+q_pick = [0, 0, pi/2, 0, 0, 0, 0];
+q_drop = [0, pi, pi/2, 0, 0, 0, 0];
+
+% Perform the movements using the class methods
+robotMovement.MoveToConfiguration(q_initial, q_pick);
+robotMovement.MoveToConfiguration(q_pick, q_drop);
+
+fprintf('Task completed.\n');
+
 
