@@ -32,16 +32,12 @@ env = SetEnvironment();
 Dobot = DobotMagician(transl(0,-1.5,0.5));
 
 %%
-% Create an instance of the LinearABB120 robot with the given transformation
-robotModel = LinearABB120(transl(-1.15,-1.15,0.5)*trotz(pi/2));
+% Create an instance of the LinearABB120 robot
+robot = ABB120();
 
-% Set step size in radians and chunk size
-stepRads = deg2rad(5);  % Adjust step size as needed (e.g., 5 degrees)
-chunkSize = 5000;       % Adjust chunk size based on memory and accuracy needs
+% Define the desired joint configuration
+q = [-0.4 0 0 0 0 0 0 0];  % Example joint configuration
 
-% Instantiate the PointCloud class
-pointCloudObj = PointCloud(robotModel, stepRads, chunkSize);
-
-% Generate and visualize the point cloud of the robot workspace
-pointCloud = pointCloudObj.createPointCloud();
+% Use the `animate` method to move the robot to the desired configuration
+robot.model.animate(q);
 
