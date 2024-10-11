@@ -36,7 +36,7 @@ Dobot = DobotMagician(transl(0,-1.5,0.5));
 robot = ABB120();
 
 % Define the desired joint configuration
-q = [-0.4 0 0 0 0 0 0 0];  % Example joint configuration
+q = [-0.4 0 pi/2 0 0 0 0];  % Example joint configuration
 
 robot.model.animate(q);
 
@@ -58,5 +58,39 @@ robotMovement.MoveToConfiguration(q_initial, q_pick);
 robotMovement.MoveToConfiguration(q_pick, q_drop);
 
 fprintf('Task completed.\n');
+
+%%
+% Read the .ply file data
+[faceData, vertexData, plyData] = plyread('BlueSapphire.ply', 'tri');
+
+% Check if color data is available and normalize
+if isfield(plyData.vertex, 'red')
+    vertexColors = [plyData.vertex.red, plyData.vertex.green, plyData.vertex.blue] / 255;
+else
+    vertexColors = repmat([0, 0, 1], size(vertexData, 1), 1);  % Default color (blue)
+end
+
+% Plot the .ply file using patch
+gemPatch = patch('Faces', faceData, 'Vertices', vertexData, ...
+                 'FaceVertexCData', vertexColors, ...
+                 'FaceColor', 'interp', ...
+                 'EdgeColor', 'none');
+
+% Set up lighting and view
+camlight;
+axis equal;
+
+%%
+% Define positions for each gem (homogeneous transforms)
+positions = {transl(0.1, 0.2, 0.1), transl(0.4, 0.2, 0.1), transl(0.7, 0.2, 0.1)};
+
+% Create an instance of the Sapphire class with the positions specified
+sapphireGems = Sapphire(1, positions(1));
+
+% Create an instance of the Emerald class with the positions specified
+emeraldGems = Emerald(1, positions(2));
+
+% Create an instance of the Ruby class with the positions specified
+rubyGems = Ruby(1, positions(3));
 
 
