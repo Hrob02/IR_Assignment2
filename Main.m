@@ -73,5 +73,3 @@ emeraldGems = Emerald(1, positions(2));
 
 % Create an instance of the Ruby class with the positions specified
 rubyGems = Ruby(1, positions(3));
-
-
