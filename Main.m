@@ -43,7 +43,7 @@ robot.model.animate(q);
 %% Animation between different q values using jtraj (need to change for collision avoidance)
 
 % Create an instance of the ABB120 robot
-robot = ABB120();
+robot = ABB120(transl(-1.15,-1.15,0.5)*trotz(pi/2));
 
 % Create an instance of the RobotMovement class
 robotMovement = RobotMovement(robot, 50);
