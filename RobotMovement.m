@@ -5,6 +5,15 @@ classdef RobotMovement
     properties
         robot;      % Robot model object
         steps = 50; % Number of steps for animation %% can change
+        % exchangePositions = shared array of the dobot final place
+            % position and the robot pick position.
+        % cameraPlace = again shared to place infront of the camera for
+            % analysis
+        % sortPositions = {-2,y,0.5; -2,y,0.5; -2,y,0.5; -2,y,0.5;};
+            % order red large, red small, green large, green small
+        qGuess = [0,0,0,0,0,0,0]; % for forward kinematics to reduce unwanted movement
+        qInitial;
+
     end
     
     methods
@@ -12,9 +21,9 @@ classdef RobotMovement
         function obj = RobotMovement(robotModel, steps)
             if nargin > 0
                 obj.robot = robotModel;
-            end
-            if nargin > 1
                 obj.steps = steps;
+                obj.qGuess = qGuess;
+                obj.qInitial = obj.robot.model.getpos();
             end
         end
         
