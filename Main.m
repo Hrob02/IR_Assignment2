@@ -73,3 +73,33 @@ emeraldGems = Emerald(1, positions(2));
 
 % Create an instance of the Ruby class with the positions specified
 rubyGems = Ruby(1, positions(3));
+
+
+%% WOrk here
+mesh_h = PlaceObject('RedRuby.ply');
+axis equal
+vertices = get(mesh_h,'Vertices');
+
+
+transformedVertices = [vertices,ones(size(vertices,1),1)] * transl(0,0,0.1)';
+set(mesh_h,'Vertices',transformedVertices(:,1:3));
+
+transformedVertices = [vertices,ones(size(vertices,1),1)] * trotx(pi/2)';
+set(mesh_h,'Vertices',transformedVertices(:,1:3));
+
+
+mdl_planar3
+hold on
+p3.plot([0,0,0])
+p3.delay = 0;
+
+axis([-3,3,-3,3,-0.5,8])
+
+for i = -pi/4:0.01:pi/4
+    p3.animate([i,i,i])
+    tr = p3.fkine([i,i,i]).T * transl(0.5,0,0);
+    transformedVertices = [vertices,ones(size(vertices,1),1)] * tr';
+    set(mesh_h,'Vertices',transformedVertices(:,1:3));
+    drawnow();
+    pause(0.01);
+end
