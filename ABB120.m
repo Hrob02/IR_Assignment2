@@ -32,7 +32,7 @@ classdef ABB120 < RobotBaseClass
             link(4) = Link('d', 0, 'a', 0.070, 'alpha', -pi/2, 'qlim', deg2rad([-360 360]), 'offset', 0);
             link(5) = Link('d', 0.302, 'a', 0, 'alpha', pi/2, 'qlim', deg2rad([-360 360]), 'offset', 0);
             link(6) = Link('d', 0, 'a', 0, 'alpha', -pi/2, 'qlim', deg2rad([-360 360]), 'offset', 0);
-            link(7) = Link('d', 0.072, 'a', 0, 'alpha', 0, 'qlim', deg2rad([-360 360]), 'offset', 0);
+            link(7) = Link('d', 0.172, 'a', 0, 'alpha', 0, 'qlim', deg2rad([-360 360]), 'offset', 0);
 
              % Add Joint Limits
             link(1).qlim = [-0.8 -0.01];

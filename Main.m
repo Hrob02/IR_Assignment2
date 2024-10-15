@@ -59,28 +59,9 @@ robotMovement.MoveToConfiguration(q_pick, q_drop);
 
 fprintf('Task completed.\n');
 
-%%
-% Read the .ply file data
-[faceData, vertexData, plyData] = plyread('BlueSapphire.ply', 'tri');
 
-% Check if color data is available and normalize
-if isfield(plyData.vertex, 'red')
-    vertexColors = [plyData.vertex.red, plyData.vertex.green, plyData.vertex.blue] / 255;
-else
-    vertexColors = repmat([0, 0, 1], size(vertexData, 1), 1);  % Default color (blue)
-end
+%% Plotting gems to workspace 
 
-% Plot the .ply file using patch
-gemPatch = patch('Faces', faceData, 'Vertices', vertexData, ...
-                 'FaceVertexCData', vertexColors, ...
-                 'FaceColor', 'interp', ...
-                 'EdgeColor', 'none');
-
-% Set up lighting and view
-camlight;
-axis equal;
-
-%%
 % Define positions for each gem (homogeneous transforms)
 positions = {transl(0.1, 0.2, 0.1), transl(0.4, 0.2, 0.1), transl(0.7, 0.2, 0.1)};
 
@@ -94,3 +75,31 @@ emeraldGems = Emerald(1, positions(2));
 rubyGems = Ruby(1, positions(3));
 
 
+%% WOrk here
+mesh_h = PlaceObject('RedRuby.ply');
+axis equal
+vertices = get(mesh_h,'Vertices');
+
+
+transformedVertices = [vertices,ones(size(vertices,1),1)] * transl(0,0,0.1)';
+set(mesh_h,'Vertices',transformedVertices(:,1:3));
+
+transformedVertices = [vertices,ones(size(vertices,1),1)] * trotx(pi/2)';
+set(mesh_h,'Vertices',transformedVertices(:,1:3));
+
+
+mdl_planar3
+hold on
+p3.plot([0,0,0])
+p3.delay = 0;
+
+axis([-3,3,-3,3,-0.5,8])
+
+for i = -pi/4:0.01:pi/4
+    p3.animate([i,i,i])
+    tr = p3.fkine([i,i,i]).T * transl(0.5,0,0);
+    transformedVertices = [vertices,ones(size(vertices,1),1)] * tr';
+    set(mesh_h,'Vertices',transformedVertices(:,1:3));
+    drawnow();
+    pause(0.01);
+end
