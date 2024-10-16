@@ -29,7 +29,7 @@ env = SetEnvironment();
 
 %% 
 % Initialize the DOBOT
-Dobot = DobotMagician(transl(0,-1.5,0.5));
+Dobot = DobotMagician1();
 
 %% Animation between different q values using jtraj (need to change for collision avoidance)
 
