@@ -25,23 +25,23 @@ classdef ABB120 < RobotBaseClass
             link(1) = Link([pi 0 0 pi/2 1]); % PRISMATIC Link
 
             % Define the D-H parameters for each link based on the given table
-            link(2) = Link('d', 0.550, 'a', 0, 'alpha', -pi/2, 'qlim', deg2rad([-360 360]), 'offset', 0); 
+            link(2) = Link('d', 0.550, 'a', 0, 'alpha', -pi/2, 'qlim', deg2rad([-170 170]), 'offset', 0); 
             %original d link 290
             % link(2) = Link('d', 0.290, 'a', 0, 'alpha', -pi/2, 'qlim', deg2rad([-360 360]), 'offset', 0); 
-            link(3) = Link('d', 0, 'a', 0.270, 'alpha', 0, 'qlim', deg2rad([-360 360]), 'offset', -pi/2); % Offset -pi/2 to match DH table
-            link(4) = Link('d', 0, 'a', 0.070, 'alpha', -pi/2, 'qlim', deg2rad([-360 360]), 'offset', 0);
-            link(5) = Link('d', 0.302, 'a', 0, 'alpha', pi/2, 'qlim', deg2rad([-360 360]), 'offset', 0);
-            link(6) = Link('d', 0, 'a', 0, 'alpha', -pi/2, 'qlim', deg2rad([-360 360]), 'offset', 0);
-            link(7) = Link('d', 0.172, 'a', 0, 'alpha', 0, 'qlim', deg2rad([-360 360]), 'offset', 0);
-
+            link(3) = Link('d', 0, 'a', 0.270, 'alpha', 0, 'qlim', deg2rad([-100 130]), 'offset', -pi/2); % Offset -pi/2 to match DH table
+            link(4) = Link('d', 0, 'a', 0.070, 'alpha', -pi/2, 'qlim', deg2rad([-200 70]), 'offset', 0);
+            link(5) = Link('d', 0.302, 'a', 0, 'alpha', pi/2, 'qlim', deg2rad([-270 270]), 'offset', 0);
+            link(6) = Link('d', 0, 'a', 0, 'alpha', -pi/2, 'qlim', deg2rad([-130 130]), 'offset', 0);
+            link(7) = Link('d', 0.172, 'a', 0, 'alpha', 0, 'qlim', deg2rad([-400 400]), 'offset', 0);
+            
              % Add Joint Limits
             link(1).qlim = [-0.8 -0.01];
-            link(2).qlim = [-360 360]*pi/180;
-            link(3).qlim = [-90 90]*pi/180;
-            link(4).qlim = [-170 170]*pi/180;
-            link(5).qlim = [-360 360]*pi/180;
-            link(6).qlim = [-360 360]*pi/180;
-            link(7).qlim = [-360 360]*pi/180;
+            link(2).qlim = [-170 170]*pi/180;
+            link(3).qlim = [-100 130]*pi/180;
+            link(4).qlim = [-200 70]*pi/180;
+            link(5).qlim = [-270 270]*pi/180;
+            link(6).qlim = [-130 130]*pi/180;
+            link(7).qlim = [-400 400]*pi/180;
 
             % Create a SerialLink object using the defined links
             self.model = SerialLink(link, 'name', self.name);
