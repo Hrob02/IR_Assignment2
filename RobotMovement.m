@@ -1,154 +1,123 @@
-% classdef RobotMovement
-% 
-%     %  RobotMovement handles the robots movements based on input joint configurations.
-% 
-%     properties
-%         robot;      % Robot model object
-%         steps = 50; % Number of steps for animation %% can change
-%         % exchangePositionsRed = shared array of the dobot final place
-%             % position and the robot pick position.
-%         % exchangePositionsGreen = 
-%         % cameraPlace = again shared to place infront of the camera for
-%             % analysis
-%         % sortPositions = {-2,y,0.5; -2,y,0.5; -2,y,0.5; -2,y,0.5;};
-%             % order red large, red small, green large, green small
-%         qGuess = [0,0,0,0,0,0,0]; % for forward kinematics to reduce unwanted movement
-%         qInitial;
-% 
-%     end
-% 
-%     methods
-%         % Constructor to initialize the robot object and steps if provided
-%         function obj = RobotMovement(robotModel) % , exchangePositionsRed, cameraPlace, exchangePositionsGreen
-%             if nargin > 0
-%                 obj.robot = robotModel;
-%                 obj.steps = steps;
-%                 obj.qGuess = qGuess;
-%                 obj.qInitial = obj.robot.model.getpos();
-%                 % obj.exchangePositionsRed
-%                 % obj.exchangePositionsGreen
-%                 % obj.exchangePositions
-%                 % obj.cameraPlace
-%             end
-%         end
-% 
-%         % Method to perform the movement from an initial to a final configuration
-%         function MoveToConfiguration(obj, q_initial, q_final)
-%             % Generate trajectory from initial to final configuration
-%             path = jtraj(q_initial, q_final, obj.steps);
-% 
-%             % Animate the movement
-%             for i = 1:obj.steps
-%                 obj.robot.model.animate(path(i, :));
-%                 drawnow;
-%             end
-%         end
-%     end
-% end
 classdef RobotMovement
-    % RobotMovement handles the robot's movements based on input joint configurations.
+    % RobotMovement handles the robot's movements and gem sorting tasks.
 
     properties
         robot; % Robot model object
         steps = 50; % Number of steps for animation
-        exchangePositionsRed; % Position for picking red gems
-        exchangePositionsGreen; % Position for picking green gems
-        cameraPlace; % Position to place the gem for camera analysis
-        sortPositions; % Positions for sorting the gems (order: red large, red small, green large, green small)
-        qGuess = [0,0,0,0,0,0,0]; % Initial guess for forward kinematics
-        qInitial; % Initial joint configuration of the robot
+        exchangePositionsRed; % Positions for picking red gems
+        exchangePositionsGreen; % Positions for picking green gems
+        cameraPlace; % Position for camera analysis
+        sortPositions; % Positions for sorting (red large, red small, green large, green small)
+        qGuess = [0, 0, 0, 0, 0, 0, 0]; % Guess for inverse kinematics
+        qInitial; % Initial joint configuration
+        gems; % Array of gem objects
+        currentGem; % Currently manipulated gem
+        gemAvailable = false; % Flag to indicate if a gem is available for sorting
     end
 
     methods
         % Constructor to initialize the robot object and properties
-        function obj = RobotMovement(robotModel)
+        function obj = RobotMovement(robotModel, sortPositions, gems, status)
             if nargin > 0
                 obj.robot = robotModel;
                 obj.steps = 50;
-                obj.qGuess = [0,0,0,0,0,0,0];
+                obj.qGuess = [0, 0, 0, 0, 0, 0, 0];
                 obj.qInitial = obj.robot.model.getpos();
-                % Define exchange and sort positions (example values)
-                obj.exchangePositionsRed = SE3(0.4, 0.3, 0.5);
-                obj.exchangePositionsGreen = SE3(0.4, -0.3, 0.5);
-                obj.cameraPlace = SE3(0.2, 0, 0.5);
-                obj.sortPositions = [SE3(0.6, 0.4, 0.5), SE3(0.6, 0.3, 0.5), ...
-                                     SE3(0.6, -0.4, 0.5), SE3(0.6, -0.3, 0.5)];
+                obj.sortPositions = sortPositions;
+                obj.gems = gems;
+                obj.gemAvailable = status;
             end
         end
 
         % Method to move the robot from an initial to a final configuration
         function MoveToConfiguration(obj, q_initial, q_final)
-            % Generate trajectory from initial to final configuration
+            % Generate trajectory using jtraj
             path = jtraj(q_initial, q_final, obj.steps);
             % Animate the movement
             for i = 1:obj.steps
                 obj.robot.model.animate(path(i, :));
+                % If a gem is currently being picked, move it with the end effector
+                if ~isempty(obj.currentGem)
+                    obj.currentGem.MoveToPosition(transl(obj.robot.model.fkine(path(i, :))));
+                end
                 drawnow;
             end
         end
 
-        % Method to pick and place a gem based on its color
-        function PickAndPlaceGem(obj, gemColor)
-            % Determine the exchange position based on gem color
-            if strcmp(gemColor, 'red')
-                exchangePosition = obj.exchangePositionsRed;
-            elseif strcmp(gemColor, 'green')
-                exchangePosition = obj.exchangePositionsGreen;
-            else
-                error('Invalid gem color specified');
-            end
+        % Method to move to a specified (x, y, z) position using IK
+        function MoveToPosition(obj, position)
+            % Convert the (x, y, z) position into a homogeneous transformation
+            targetTransform = transl(position(1), position(2), position(3));
+            % Solve for joint configuration using IK
+            qFinal = obj.robot.model.ikcon(targetTransform, obj.robot.model.getpos());
+            obj.qGuess = qFinal; % Update the guess for the next calculation
 
-            % Move to the exchange position to pick the gem
-            qExchange = obj.robot.model.ikcon(exchangePosition.T, obj.qGuess);
-            obj.MoveToConfiguration(obj.qInitial, qExchange);
-            
-            % Close the gripper to pick up the gem
-            disp('suction pick up the gem');
-            
-            % Move to the camera position for analysis
-            qCamera = obj.robot.model.ikcon(obj.cameraPlace.T, obj.qGuess);
-            obj.MoveToConfiguration(qExchange, qCamera);
-            
-            % Assume gem size determination (example: use gem color to decide)
-            if strcmp(gemColor, 'red')
-                gemSize = 'large';
-            else
-                gemSize = 'small';
-            end
-
-            % Move to the appropriate sort position
-            obj.SortGem(gemColor, gemSize);
+            % Move to the calculated joint configuration
+            obj.MoveToConfiguration(obj.robot.model.getpos(), qFinal);
         end
 
-        % Method to sort a gem based on color and size
-        function SortGem(obj, gemColor, gemSize)
-            % Determine the sort position based on gem color and size
-            if strcmp(gemColor, 'red') && strcmp(gemSize, 'large')
-                sortPosition = obj.sortPositions(1);
-            elseif strcmp(gemColor, 'red') && strcmp(gemSize, 'small')
-                sortPosition = obj.sortPositions(2);
-            elseif strcmp(gemColor, 'green') && strcmp(gemSize, 'large')
-                sortPosition = obj.sortPositions(3);
-            elseif strcmp(gemColor, 'green') && strcmp(gemSize, 'small')
-                sortPosition = obj.sortPositions(4);
+        % Method to pick a gem
+        function PickGem(obj, gemIndex)
+            if obj.gemAvailable
+                % Attach gem to end effector
+                obj.currentGem = obj.gems(gemIndex);
+                disp(['Picking gem: ', num2str(gemIndex)]);
+                % Move to the initial position of the gem
+                obj.MoveToPosition(obj.currentGem.position);
+                % Placeholder for suction activation
+                disp('Suction activated to pick up gem.');
+                obj.gemAvailable = false; % Reset availability status after picking up
             else
-                error('Invalid gem color or size specified');
+                disp('No gem available to pick up.');
             end
-
-            % Move to the sort position and release the gem
-            qSort = obj.robot.model.ikcon(sortPosition.T, obj.qGuess);
-            obj.MoveToConfiguration(obj.qInitial, qSort);
-            disp('Suction release gem');
         end
 
-        % Method to execute the sorting task for multiple gems
+        % Method to place a gem at a specified position
+        function PlaceGem(obj, position)
+            if ~isempty(obj.currentGem)
+                % Move to the specified position
+                obj.MoveToPosition(position);
+                % Place the gem at the specified position
+                obj.currentGem.MoveToPosition(position);
+                % Release the gem
+                obj.currentGem = [];
+                disp('Gem placed successfully and suction deactivated.');
+            else
+                disp('No gem is currently being held.');
+            end
+        end
+
+        % Method to sort a gem based on size and color
+        function SortGem(obj, gemIndex, sortPosition)
+            % Wait until a gem is available
+            if obj.gemAvailable
+                % Pick the specified gem
+                obj.PickGem(gemIndex);
+                % Move to the sort position and release the gem
+                obj.PlaceGem(sortPosition);
+            else
+                disp('Gem is not available for sorting.');
+            end
+        end
+
+        % Execute sorting tasks for all gems
         function ExecuteSortingTask(obj)
-            gemList = {'red', 'green', 'red', 'green'}; % Example list of gems
-            for i = 1:length(gemList)
-                gemColor = gemList{i};
-                obj.PickAndPlaceGem(gemColor);
-                obj.qInitial = obj.robot.model.getpos(); % Update initial position
+            % Sort red gems
+            for i = 1:size(obj.exchangePositionsRed, 1)
+                % Determine the appropriate sort position for the red gem
+                sortPosition = obj.sortPositions{mod(i-1, 2) + 1}; % Red positions (1 or 2)
+                obj.SortGem(i, sortPosition);
             end
+
+            % Sort green gems
+            for i = 1:size(obj.exchangePositionsGreen, 1)
+                gemIndex = size(obj.exchangePositionsRed, 1) + i;
+                % Determine the appropriate sort position for the green gem
+                sortPosition = obj.sortPositions{mod(i-1, 2) + 3}; % Green positions (3 or 4)
+                obj.SortGem(gemIndex, sortPosition);
+            end
+            disp('Gem sorting task completed.');
         end
     end
 end
+
