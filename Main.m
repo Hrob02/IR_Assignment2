@@ -29,7 +29,7 @@ env = SetEnvironment();
 
 %% 
 % Initialize the DOBOT
-Dobot = DobotMagician(transl(0,-1.5,0.5));
+Dobot = DobotMagician1();
 
 %% Move ABB120 robot to specific q value position
 % Create an instance of the LinearABB120 robot
