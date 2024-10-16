@@ -31,22 +31,19 @@ env = SetEnvironment();
 % Initialize the DOBOT
 Dobot = DobotMagician1();
 
-%% Move ABB120 robot to specific q value position
-% Create an instance of the LinearABB120 robot
-robot = ABB120();
+%% Animation between different q values using jtraj (need to change for collision avoidance)
+
+% Create an instance of the ABB120 robot
+robot = ABB120(transl(-1.15,-1.15,0.5)*trotz(pi/2));
 
 % Define the desired joint configuration
 q = [-0.4 0 pi/2 0 0 0 0];  % Example joint configuration
 
 robot.model.animate(q);
 
-%% Animation between different q values using jtraj (need to change for collision avoidance)
-
-% Create an instance of the ABB120 robot
-robot = ABB120(transl(-1.15,-1.15,0.5)*trotz(pi/2));
-
 % Create an instance of the RobotMovement class
-robotMovement = RobotMovement(robot, 50);
+robotMovement = RobotMovement(robot);
+robotMovement.ExecuteSortingTask();
 
 % Define initial and final joint configurations
 q_initial = zeros(1, 7);
@@ -64,9 +61,6 @@ fprintf('Task completed.\n');
 
 % Define positions for each gem (homogeneous transforms)
 positions = {transl(0.1, 0.2, 0.1), transl(0.4, 0.2, 0.1), transl(0.7, 0.2, 0.1)};
-
-% Create an instance of the Sapphire class with the positions specified
-sapphireGems = Sapphire(1, positions(1));
 
 % Create an instance of the Emerald class with the positions specified
 emeraldGems = Emerald(1, positions(2));
