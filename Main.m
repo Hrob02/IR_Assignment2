@@ -158,3 +158,35 @@ pointCloudTester.createPointCloud(numSamples);
 %     drawnow();
 %     pause(0.01);
 % end
+
+%%
+% Initialize the robot model
+robot = LinearUR3e() ;
+
+% Define the initial and next joint configurations
+q_initial = zeros(1,7);         % Initial pose (all zeros)
+q_next = [0 pi/2 0 0 0 0 0];      % Next pose (move to this configuration)
+
+% Set the workspace for visualization
+axis([-2 2 -2 2 0 2]);
+grid on;
+
+% Define the number of steps for smooth animation
+steps = 50;
+
+% Generate a trajectory between the initial and next joint configuration
+qMatrix = jtraj(q_initial, q_next, steps);
+
+% Loop through the trajectory and manually update robot's joint transforms
+for i = 1:steps
+    % Get the forward kinematics for the current joint configuration
+    tr = robot.model.fkine(qMatrix(i, :));
+    
+    % Visualize the robot by transforming the links based on joint angles
+    robot.model.animate(qMatrix(i, :));  % Update the robot's joint angles
+    
+    pause(0.05);  % Pause for smooth animation
+end
+
+
+
