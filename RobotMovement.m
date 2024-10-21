@@ -29,6 +29,26 @@ classdef RobotMovement
             end
         end
 
+          % Method to move the UR3e robot to a specific joint configuration
+        function MoveToJointConfiguration(obj, qValues)
+            % Check if the qValues provided match the number of joints
+            if length(qValues) ~= obj.robot.model.n
+                error('The joint configuration must have %d values corresponding to the robot joints.', obj.UR3.model.n);
+            end
+    
+            % Generate trajectory from the current position to the desired qValues
+            qCurrent = obj.robot.model.getpos();
+            path = jtraj(qCurrent, qValues, obj.steps);
+    
+            % Animate the movement along the path
+            for i = 1:obj.steps
+                obj.robot.model.animate(path(i, :));
+                drawnow;
+            end
+            
+            disp('Robot moved to the specified joint configuration.');
+        end
+
         % Method to move the robot from an initial to a final configuration
         function MoveToConfiguration(obj, q_initial, q_final)
             % Generate trajectory using jtraj

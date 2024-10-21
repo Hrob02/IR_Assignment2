@@ -26,12 +26,12 @@ env = SetEnvironment();
 %% Gem Setup
 % Create gem objects and place them in the environment
 gems = [
-    Gem([0.3824, -0.869, 0.51], 'small', 'red'); %% needs unique q values for pick and drop off
     Gem([0.3824, -1.069, 0.51], 'small', 'red');
     Gem([0.3824, -1.269, 0.51], 'small', 'red');
     Gem([0.3824, -1.469, 0.5], 'large', 'green');
     Gem([0.3824, -1.669, 0.51], 'small', 'red');
-    Gem([0.3824, -1.869, 0.51], 'small', 'red'); %% needs unique q values for pick and drop off
+    Gem([0.3824, -1.869, 0.51], 'small', 'red'); 
+    Gem([0.3824, -2.029, 0.51], 'small', 'red'); 
 ];
 
 
@@ -56,26 +56,29 @@ end
 % Initialize the UR3 robot model
 UR3 = LinearUR3e(transl(-0.15, -1.1, 0.5) * trotz(pi/2));
 
-% Define initial positions for the gems
-initialGemPositions = [
-    0.3824, -1.469, 0.59;  % Gem 1
-    % 0., -1.5, 0.55;  % Gem 2
-    % 0.5, -1.7, 0.55;  % Gem 3
-];
-
-% Define the camera position for analysis 
-cameraPosition = [-0.6921, -0.999, 0.6519];
-
-% Define exchange positions for sorting by color
-exchangePositions.red = [
-    -0.6824, -1.731, 0.59;  % Position for red gems
-];
-exchangePositions.green = [
-    % -0.2, -1.8, 0.55;  % Position for green gems
-];
+% is this neccessary?
+% % Define initial positions for the gems 
+% initialGemPositions = [
+%     0.3824, -1.069, 0.51;  % Gem 1
+%     % 0., -1.5, 0.55;  % Gem 2
+%     % 0.5, -1.7, 0.55;  % Gem 3
+% ];
+% 
+% % Define the camera position for analysis 
+% cameraPosition = [-0.6921, -0.999, 0.6519];
+% 
+% % Define exchange positions for sorting by color
+% exchangePositions.red = [
+%     -0.6824, -1.731, 0.59;  % Position for red gems
+% ];
+% exchangePositions.green = [
+%     % -0.2, -1.8, 0.55;  % Position for green gems
+% ];
 
 % Initialize UR3 Movement with required parameters
 UR3MovementInstance = UR3Movement(UR3, initialGemPositions, cameraPosition, exchangePositions, gems);
+
+%%
 
 % Initial starting position of the LinearUR3e robot
 q0 = zeros(1,7); % Initial configuration
@@ -85,21 +88,18 @@ q_cam = [-0.2 pi -pi/2 0 0 0 0];  % Camera position configuration
 
 % Define pickup and dropoff configurations
 q_pickup = [
-    % Pickup for Gem(1) %% need to add its unique
-    -0.1 pi 17*pi/40 0 25*pi/360 -pi/2 0;  % Pickup for Gem(2)
-    -0.3 pi 17*pi/40 0 25*pi/360 -pi/2 0;  % Pickup for Gem(3)
-    -0.5 pi 17*pi/40 0 25*pi/360 -pi/2 0;  % Pickup for Gem(4)
-    -0.7 pi 17*pi/40 0 25*pi/360 -pi/2 0   % Pickup for Gem(5)
-    -0.8 pi 17*pi/40 0 25*pi/360 -pi/2 0   % Pickup for Gem(6) %% need to change
+    -0.1 pi 17*pi/40 0 25*pi/360 -pi/2 0;  % Pickup for Gem(1)
+    -0.3 pi 17*pi/40 0 25*pi/360 -pi/2 0;  % Pickup for Gem(2)
+    -0.5 pi 17*pi/40 0 25*pi/360 -pi/2 0;  % Pickup for Gem(3)
+    -0.7 pi 17*pi/40 0 25*pi/360 -pi/2 0;  % Pickup for Gem(4)
+    -0.64 0 -17*pi/40 0 -25*pi/360 pi/2 0; % Pickup for Gem(5) 
+    -0.8 0 -17*pi/40 0 -25*pi/360 pi/2 0;  % Pickup for Gem(6) 
 ];
 
-q_dropoff = [
-    % Dropoff for Gem(1) %% need to add its unique
-    -0.3 0 17*pi/40 0 25*pi/360 -pi/2 0    % Dropoff for Gem(2)
-    -0.3 0 17*pi/40 0 25*pi/360 -pi/2 0    % Dropoff for Gem(3)
-    -0.5 0 17*pi/40 0 25*pi/360 -pi/2 0;   % Dropoff for Gem(4)
-    -0.7 0 17*pi/40 0 25*pi/360 -pi/2 0    % Dropoff for Gem(5)
-    -0.8 0 17*pi/40 0 25*pi/360 -pi/2 0    % Dropoff for Gem(6) %% need to change
+q_dropoff = [ %% need to chnage code for this update loop %% assume gems are all droped randomly into the box
+    -0.5 0 17*pi/40 0 25*pi/360 -pi/2 0;   % Dropoff if Green
+    -0.7 0 17*pi/40 0 25*pi/360 -pi/2 0    % Dropoff if Red
+    
 ];
 
 
@@ -130,9 +130,10 @@ for i = 1:length(q_pickup)
 end
 
 
+
 %% Robot Control
 % Initialize the ABB robot model
-robot = ABB120(transl(-1.15, -1.15, 0.5) * trotz(pi/2));
+robot = ABB120(transl(-1.25, -1.15, 0.5) * trotz(pi/2));
 
 % Define sorting positions for different sizes and colors
 sortPositions = {
@@ -142,9 +143,63 @@ sortPositions = {
     [-1.8, -1.8, 0.6]; % Green small
 };
 
+%%
 % Initialize Robot Movement with required parameters
 robotMovement = RobotMovement(robot, sortPositions, gems, true);
 
+q4 = [-0.7 0 pi/2 -7*pi/20 0 7*pi/20 0];
+robotMovement.MoveToJointConfiguration(q4);
+
+%%
+
+% Initial starting position of the ABB120 robot
+q0 = zeros(1,7); % Initial configuration
+
+% Camera q value for ABB120
+q_cam = [-0.2 pi -pi/2 0 0 0 0];  % Camera position configuration
+
+% Define pickup and dropoff configurations
+q_pickup = [
+    -0.5 0 pi/2 -7*pi/20 0 7*pi/20 0;
+    -0.7 0 pi/2 -7*pi/20 0 7*pi/20 0;
+];
+
+q_dropoff = [ 
+   -0.5 0 -pi/2 -9*pi/20 0 29*pi/20 0;
+   -0.7 0 -pi/2 -9*pi/20 0 29*pi/20 0;
+    
+];
+
+%%
+q_cam = [-0.8 0 pi/2 -pi/2 0 0 0];
+
+robotMovement.MoveToJointConfiguration(q_cam);
+
+%% Loop through each pickup and dropoff position
+for i = 1:length(q_pickup)
+    
+    % Move to initial position
+    robotMovement.MoveToJointConfiguration(q0);
+    pause(1);  % Wait for 2 seconds
+    
+    % Move to pickup configuration
+    robotMovement.MoveToJointConfiguration(q_pickup(i, :));
+    pause(1);  % Wait for 2 seconds
+    
+    % Move to camera position
+    robotMovement.MoveToJointConfiguration(q_cam);
+    pause(1);  % Wait for 2 seconds
+    
+    % Move to initial position again
+    robotMovement.MoveToJointConfiguration(q0);
+    
+    
+    % Move to dropoff configuration
+    robotMovement.MoveToJointConfiguration(q_dropoff(i, :));
+    pause(1);  % Wait for 2 seconds
+    
+end
+%%
 
 % Assuming robotMovement is an instance of RobotMovement
 % Define exchange positions for sorting red gems
