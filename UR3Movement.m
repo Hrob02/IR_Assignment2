@@ -1,6 +1,6 @@
 classdef UR3Movement
     properties
-        UR3; % Dobot model
+        UR3; % UR3 model
         initialGemPositions; % Initial positions for the gems
         cameraPosition; % Position for camera analysis
         exchangePositions; % Positions to place gems after sorting by color
@@ -10,25 +10,27 @@ classdef UR3Movement
     end
     
     methods
-        % Constructor to initialize the Dobot object and properties
+        % Constructor to initialize the UR3Movement object
         function obj = UR3Movement(UR3Model, initialGemPositions, cameraPosition, exchangePositions, gems)
-            if nargin > 0
+            if nargin == 5  % Ensure that all parameters are passed
                 obj.UR3 = UR3Model;
-                obj.steps = 50;
                 obj.initialGemPositions = initialGemPositions;
                 obj.cameraPosition = cameraPosition;
                 obj.exchangePositions = exchangePositions;
-                obj.gems = gems;
+                obj.gems = gems; % Check that gems are initialized correctly
                 obj.currentGem = []; % Initialize as empty
+            else
+                error('All parameters must be provided to UR3Movement constructor.');
             end
         end
         
-        function MoveToPosition(obj, position)
+        
+       function MoveToPosition(obj, position)
             % Convert the (x, y, z) position into a homogeneous transformation
             targetTransform = transl(position(1), position(2), position(3));
             % Solve for joint configuration using IK
-            qFinal = obj.UR3.model.ikcon(targetTransform, obj.UR3.model.getpos());
-            
+            qFinal = obj.UR3.model.ikcon(targetTransform*trotx(pi), obj.UR3.model.getpos());
+           
             % Validate the resulting joint configuration
             if isempty(qFinal) || length(qFinal) ~= obj.UR3.model.n
                 error('Inverse kinematics failed to find a valid solution.');
@@ -63,26 +65,30 @@ classdef UR3Movement
                 drawnow;
             end
         end
+
         
-        % Method to pick a gem
         function PickGem(obj, gemIndex)
-            % Check if the gem index is within range
-            if gemIndex <= length(obj.gems)
+            % Check if the gem index is within range and if it's not already sorted
+            if gemIndex > 0 && gemIndex <= length(obj.gems) && ~obj.gems(gemIndex).isSorted
                 % Get the gem to pick
                 obj.currentGem = obj.gems(gemIndex);
                 if isa(obj.currentGem, 'Gem')
                     disp(['Picking gem: ', num2str(gemIndex)]);
                     % Move to the initial position of the gem
                     obj.MoveToPosition(obj.currentGem.position);
-                    % Attach gem to the end effector after reaching its position
+                    % Move the gem to the end-effector position
+                    endEffectorTransform = obj.UR3.model.fkine(obj.UR3.model.getpos());
+                    gemPosition = endEffectorTransform(1:3, 4).'; % Get the position of the end effector
+                    obj.currentGem.MoveToPosition(gemPosition); % Move the gem to the end-effector
                     disp('Gem picked successfully.');
                 else
                     error('The selected object is not a valid Gem.');
                 end
             else
-                error('Gem index out of range.');
+                error('Gem index out of range or gem already sorted.');
             end
         end
+
         
         % Method to analyze the gem using the camera
         function AnalyzeGem(obj)
@@ -92,7 +98,6 @@ classdef UR3Movement
             disp('Analyzing gem color...');
         end
         
-        % Method to place the gem at an exchange position based on the assigned color
         function PlaceGemAtExchange(obj, robotMovement)
             if isempty(obj.currentGem)
                 error('No gem is currently held.');
@@ -100,37 +105,37 @@ classdef UR3Movement
             if ~isa(obj.currentGem, 'Gem')
                 error('The current gem is not a valid Gem object.');
             end
-
+        
             color = obj.currentGem.color;
             if strcmp(color, 'red')
-                exchangePos = obj.exchangePositions.red(1, :); % Use the first available position
+                exchangePos = obj.exchangePositions.red(1, :);
             elseif strcmp(color, 'green')
-                exchangePos = obj.exchangePositions.green(1, :); % Use the first available position
+                exchangePos = obj.exchangePositions.green(1, :);
             else
                 disp(['Unknown color detected: ', color]);
                 return;
             end
-            
+        
             % Move to the determined exchange position
             obj.MoveToPosition(exchangePos);
             % Simulate placing the gem at the exchange position
             obj.currentGem.MoveToPosition(exchangePos);
-            % Notify the robot movement system that a gem is available for sorting
-            robotMovement.gemAvailable = true;
+            obj.currentGem.isSorted = true; % Mark the gem as sorted
             disp(['Gem placed at exchange position for ', color, ' gem.']);
-            % Clear the currentGem after placing
-            obj.currentGem = [];
+            obj.currentGem = []; % Clear the current gem after placing
         end
 
-        % Execute the task of sorting gems
         function ExecuteTask(obj, robotMovement)
             for i = 1:length(obj.gems)
-                % Pick the gem
-                obj.PickGem(i);
-                % Analyze the gem color
-                obj.AnalyzeGem();
-                % Place gem at the corresponding exchange position
-                obj.PlaceGemAtExchange(robotMovement);
+                % Only attempt to pick gems that are not sorted
+                if ~obj.gems(i).isSorted
+                    % Pick the gem
+                    obj.PickGem(i);
+                    % Analyze the gem color
+                    obj.AnalyzeGem();
+                    % Place gem at the corresponding exchange position
+                    obj.PlaceGemAtExchange(robotMovement);
+                end
             end
             disp('Gem sorting task completed.');
         end

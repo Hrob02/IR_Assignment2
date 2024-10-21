@@ -1,4 +1,4 @@
-%% Set Up Simulation
+% Set Up Simulation
 % Set up the figure window and workspace
 figure('Position', [100, 100, 1200, 800]); % [left, bottom, width, height]
 axis([-10 10 -10 10 -5 15]); % [xmin xmax ymin ymax zmin zmax]
@@ -26,14 +26,19 @@ env = SetEnvironment();
 %% Gem Setup
 % Create gem objects and place them in the environment
 gems = [
-    Gem([0.36, -1, 0.5], 'small', 'red');
+    Gem([0.5, -1.3, 0.5], 'small', 'red');
     Gem([0.5, -1.5, 0.5], 'large', 'green');
-    Gem([0.4292, -1.7, 0.5], 'small', 'red');
+    Gem([0.5, -1.7, 0.5], 'small', 'red');
 ];
 
 % Verify that gems are created properly
 if isempty(gems)
     error('Gems array is empty. Make sure the gems are properly initialized.');
+end
+
+% Visualize gems in their initial positions
+for i = 1:length(gems)
+    gems(i).MoveToPosition(gems(i).position);  % Ensure gems are visualized correctly
 end
 
 %% UR3 Control
@@ -44,9 +49,9 @@ UR3 = LinearUR3e(transl(0.1, -1.1, 0.5) * trotz(pi/2));
 
 % Define initial positions for the gems
 initialGemPositions = [
-    0.36, -1, 0.6;  % Gem 1
-    0.5, -1.5, 0.5;  % Gem 2
-    0.4708, -1.7, 0.5;  % Gem 3
+    0.5, -1.3, 0.55;  % Gem 1
+    0.5, -1.5, 0.55;  % Gem 2
+    0.5, -1.7, 0.55;  % Gem 3
 ];
 
 % Define the camera position for analysis
@@ -61,8 +66,7 @@ exchangePositions.green = [
 ];
 
 % Initialize UR3 Movement with required parameters
-UR3Movement = UR3Movement(UR3, initialGemPositions, cameraPosition, exchangePositions, gems);
-
+UR3MovementInstance = UR3Movement(UR3, initialGemPositions, cameraPosition, exchangePositions, gems);
 
 %% Robot Control
 % Initialize the ABB robot model
@@ -97,7 +101,7 @@ robotMovement.cameraPlace = cameraPosition;
 %% Execute Sorting Tasks
 % Perform sorting tasks using both robots
 % First, execute UR3's task to sort by color
-UR3Movement.ExecuteTask(robotMovement);
+UR3MovementInstance.ExecuteTask(robotMovement);
 
 for i = 1:length(gems)
     % Determine the exchange position based on the gem color
@@ -109,7 +113,7 @@ for i = 1:length(gems)
         error('Unknown gem color detected.');
     end
     % Place the gem at the determined exchange position
-    UR3Movement.PlaceGemAtExchange(robotMovement);
+    UR3MovementInstance.PlaceGemAtExchange(robotMovement);
     pause(0.5);
 end
 
