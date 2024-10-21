@@ -147,7 +147,7 @@ sortPositions = {
 % Initialize Robot Movement with required parameters
 robotMovement = RobotMovement(robot, sortPositions, gems, true);
 
-q4 = [-0.7 0 pi/2 -7*pi/20 0 7*pi/20 0];
+q4 =  [-0.5 pi pi/2 -9*pi/20 0 9*pi/20 0];
 robotMovement.MoveToJointConfiguration(q4);
 
 %%
@@ -155,8 +155,10 @@ robotMovement.MoveToJointConfiguration(q4);
 % Initial starting position of the ABB120 robot
 q0 = zeros(1,7); % Initial configuration
 
+q_transition = [-0.5 pi/2 0 0 0 0 0];
+
 % Camera q value for ABB120
-q_cam = [-0.2 pi -pi/2 0 0 0 0];  % Camera position configuration
+q_cam = [-0.02 0 pi/2 -3*pi/10 pi/2 pi/2 0]; % Camera position configuration
 
 % Define pickup and dropoff configurations
 q_pickup = [
@@ -165,15 +167,11 @@ q_pickup = [
 ];
 
 q_dropoff = [ 
-   -0.5 0 -pi/2 -9*pi/20 0 29*pi/20 0;
-   -0.7 0 -pi/2 -9*pi/20 0 29*pi/20 0;
+   -0.5 pi pi/2 -9*pi/20 0 9*pi/20 0;
+   -0.7 pi pi/2 -9*pi/20 0 9*pi/20 0;
     
 ];
 
-%%
-q_cam = [-0.8 0 pi/2 -pi/2 0 0 0];
-
-robotMovement.MoveToJointConfiguration(q_cam);
 
 %% Loop through each pickup and dropoff position
 for i = 1:length(q_pickup)
@@ -191,7 +189,7 @@ for i = 1:length(q_pickup)
     pause(1);  % Wait for 2 seconds
     
     % Move to initial position again
-    robotMovement.MoveToJointConfiguration(q0);
+    robotMovement.MoveToJointConfiguration(q_transition);
     
     
     % Move to dropoff configuration

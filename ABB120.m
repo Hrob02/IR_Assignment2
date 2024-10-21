@@ -29,7 +29,7 @@ classdef ABB120 < RobotBaseClass
             % link(2) = Link('d', 0.550, 'a', 0, 'alpha', -pi/2, 'qlim', deg2rad([-170 170]), 'offset', 0); 
             
             link(2) = Link('d', 0.290, 'a', 0, 'alpha', -pi/2, 'qlim', deg2rad([-360 360]), 'offset', 0); 
-            link(3) = Link('d', 0, 'a', 0.270, 'alpha', 0, 'qlim', deg2rad([-100 130]), 'offset', -pi/2); % Offset -pi/2 to match DH table
+            link(3) = Link('d', 0, 'a', 0.270, 'alpha', 0, 'qlim', deg2rad([-90 90]), 'offset', -pi/2); % Offset -pi/2 to match DH table
             link(4) = Link('d', 0, 'a', 0.070, 'alpha', -pi/2, 'qlim', deg2rad([-200 70]), 'offset', 0);
             link(5) = Link('d', 0.302, 'a', 0, 'alpha', pi/2, 'qlim', deg2rad([-270 270]), 'offset', 0);
             link(6) = Link('d', 0, 'a', 0, 'alpha', -pi/2, 'qlim', deg2rad([-130 130]), 'offset', 0);
