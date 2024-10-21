@@ -160,33 +160,89 @@ pointCloudTester.createPointCloud(numSamples);
 % end
 
 %%
-% Initialize the robot model
-robot = LinearUR3e() ;
 
-% Define the initial and next joint configurations
-q_initial = zeros(1,7);         % Initial pose (all zeros)
-q_next = [0 pi/2 0 0 0 0 0];      % Next pose (move to this configuration)
+ sortingTable = [-2,-2.05,0.65; -2,-1.45,0.65; -0.5,-2.05,0.55];
+             for i = 1:size(sortingTable)
+                 Shelves = PlaceObject('bookcaseTwoShelves0.5x0.2x0.5m.ply', [sortingTable(i,:)]);
+                 vertices = get(Shelves, 'Vertices');
+                 pos = [sortingTable(i,:)]; % Update with actual position if necessary
+                 centered = vertices - pos;
+                 rotationMatrix = trotx(-pi/2); % Example rotation
+                 transformed = (rotationMatrix(1:3, 1:3) * centered')';
+                 set(Shelves, 'Vertices', transformed + pos);
+             end
+%%
+
+% Initialize the robot model
+robot = LinearUR3e(transl(0.1, -1.1, 0.6) * trotz(pi/2));
 
 % Set the workspace for visualization
-axis([-2 2 -2 2 0 2]);
+axis([-3 2 -3 2 0 2]);
 grid on;
+%%
+% q = [-0.7 0 pi/2 0 0 -pi/2 0];
+q = [-0.5 0 pi/2 0 0 -pi/2 0];
 
-% Define the number of steps for smooth animation
-steps = 50;
+robot.model.animate(q);
 
-% Generate a trajectory between the initial and next joint configuration
-qMatrix = jtraj(q_initial, q_next, steps);
 
-% Loop through the trajectory and manually update robot's joint transforms
-for i = 1:steps
-    % Get the forward kinematics for the current joint configuration
-    tr = robot.model.fkine(qMatrix(i, :));
+%%
+% Initialize variables
+steps = 100;
+
+% Define the start and end brick transformations
+
+t2_start = transl(-0.2, -1.7, 0) * transl(0, 0, 0.19) * rpy2tr(180, 0, 0, 'deg');
+t3_start = transl(-0.3, 0.5, 0) * transl(0, 0, 0.19) * rpy2tr(180, 0, 0, 'deg');
+t4_start = transl(-0.4, 0.5, 0) * transl(0, 0, 0.19) * rpy2tr(180, 0, 0, 'deg');
+
+t2_end = transl(-0.5, -0.5, 0) * transl(0, 0, 0.04) * rpy2tr(180, 0, 90, 'deg');
+t3_end = transl(-0.635, -0.5, 0) * transl(0, 0, 0.04) * rpy2tr(180, 0, 90, 'deg');
+t4_end = transl(-0.77, -0.5, 0) * transl(0, 0, 0.04) * rpy2tr(180, 0, 90, 'deg');
+
+% Calculate inverse kinematics for each transformation
+q2_start = robot.model.ikcon(t2_start);
+q3_start = robot.model.ikcon(t3_start);
+q4_start = robot.model.ikcon(t4_start);
+
+q2_end = robot.model.ikcon(t2_end);
+q3_end = robot.model.ikcon(t3_end);
+q4_end = robot.model.ikcon(t4_end);
+
+% Generate the trajectories between the positions
+path1 = jtraj(q2_start, q2_end, steps);
+path2 = jtraj(q3_start, q3_end, steps);
+path3 = jtraj(q4_start, q4_end, steps);
+
+% Define the paths for easier looping
+paths = {path1, path2, path3};
+
+% Total number of paths
+totalPaths = 3;
+
+% Loop through the trajectories to animate the robot
+for n = 1:totalPaths
+    % Display status of the task
+    fprintf('Moving to brick location %d...\n', n);
+
+    % Animate the robot moving through the trajectory
+    for i = 1:steps
+        robot.model.animate(paths{n}(i, :));
+        drawnow;
+    end
     
-    % Visualize the robot by transforming the links based on joint angles
-    robot.model.animate(qMatrix(i, :));  % Update the robot's joint angles
-    
-    pause(0.05);  % Pause for smooth animation
+    % Display completion of the task
+    fprintf('Brick %d moved.\n', n);
 end
 
+% Display completion status
+fprintf('Task completed. All bricks have been moved.\n');
 
+
+%%
+
+% Initialize the robot model
+robot = LinearUR3e(trotz(pi/2));
+
+%%
 
