@@ -24,13 +24,12 @@ classdef UR3Movement
             end
         end
         
-        
-       function MoveToPosition(obj, position)
+        function MoveToPosition(obj, position)
             % Convert the (x, y, z) position into a homogeneous transformation
             targetTransform = transl(position(1), position(2), position(3));
             % Solve for joint configuration using IK
-            qFinal = obj.UR3.model.ikcon(targetTransform*trotx(pi), obj.UR3.model.getpos());
-           
+            qFinal = obj.UR3.model.ikcon(targetTransform * trotx(pi), obj.UR3.model.getpos());
+        
             % Validate the resulting joint configuration
             if isempty(qFinal) || length(qFinal) ~= obj.UR3.model.n
                 error('Inverse kinematics failed to find a valid solution.');
@@ -52,13 +51,13 @@ classdef UR3Movement
                 
                 % Ensure the currentTransform is a valid 4x4 matrix
                 if size(currentTransform, 1) == 4 && size(currentTransform, 2) == 4
-                    % Extract the end-effector position using a transpose
-                    gemPosition = currentTransform(1:3, 4).'; % Transpose to convert column to row vector
+                    % Extract the end-effector position
+                    gemPosition = currentTransform.T'; % Transpose to convert column to row vector
                     if ~isempty(obj.currentGem) && isa(obj.currentGem, 'Gem')
-                        obj.currentGem.MoveToPosition(gemPosition);
+                        % Move and animate the gem with the robot
+                        obj.currentGem.attachToEndEffector(currentTransform); % Update the gem position
                     end
                 else
-                    % If the transformation matrix is not valid, display a warning
                     warning('The transformation matrix for the robot''s end effector is not of size 4x4.');
                 end
                 
@@ -76,10 +75,9 @@ classdef UR3Movement
                     disp(['Picking gem: ', num2str(gemIndex)]);
                     % Move to the initial position of the gem
                     obj.MoveToPosition(obj.currentGem.position);
-                    % Move the gem to the end-effector position
+                    % Attach the gem to the end effector
                     endEffectorTransform = obj.UR3.model.fkine(obj.UR3.model.getpos());
-                    gemPosition = endEffectorTransform(1:3, 4).'; % Get the position of the end effector
-                    obj.currentGem.MoveToPosition(gemPosition); % Move the gem to the end-effector
+                    obj.currentGem.attachToEndEffector(endEffectorTransform); % Use the updated method
                     disp('Gem picked successfully.');
                 else
                     error('The selected object is not a valid Gem.');
@@ -98,7 +96,7 @@ classdef UR3Movement
             disp('Analyzing gem color...');
         end
         
-        function PlaceGemAtExchange(obj, robotMovement)
+        function PlaceGemAtExchange(obj)
             if isempty(obj.currentGem)
                 error('No gem is currently held.');
             end
@@ -125,7 +123,7 @@ classdef UR3Movement
             obj.currentGem = []; % Clear the current gem after placing
         end
 
-        function ExecuteTask(obj, robotMovement)
+        function ExecuteTask(obj)
             for i = 1:length(obj.gems)
                 % Only attempt to pick gems that are not sorted
                 if ~obj.gems(i).isSorted
@@ -134,10 +132,11 @@ classdef UR3Movement
                     % Analyze the gem color
                     obj.AnalyzeGem();
                     % Place gem at the corresponding exchange position
-                    obj.PlaceGemAtExchange(robotMovement);
+                    obj.PlaceGemAtExchange();
                 end
             end
             disp('Gem sorting task completed.');
         end
     end
 end
+

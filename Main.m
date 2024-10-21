@@ -26,9 +26,9 @@ env = SetEnvironment();
 %% Gem Setup
 % Create gem objects and place them in the environment
 gems = [
-    Gem([0.5, -1.3, 0.5], 'small', 'red');
-    Gem([0.5, -1.5, 0.5], 'large', 'green');
-    Gem([0.5, -1.7, 0.5], 'small', 'red');
+    Gem([0.5, -1.5, 0.5], 'large', 'green')
+    Gem([0.5, -1.3, 0.5], 'small', 'red')
+    Gem([0.5, -1.7, 0.5], 'small', 'red')
 ];
 
 % Verify that gems are created properly
@@ -36,14 +36,7 @@ if isempty(gems)
     error('Gems array is empty. Make sure the gems are properly initialized.');
 end
 
-% Visualize gems in their initial positions
-for i = 1:length(gems)
-    gems(i).MoveToPosition(gems(i).position);  % Ensure gems are visualized correctly
-end
-
 %% UR3 Control
-% Main script to run the UR3 and manage gems
-
 % Initialize the UR3 robot model
 UR3 = LinearUR3e(transl(0.1, -1.1, 0.5) * trotz(pi/2));
 
@@ -101,19 +94,24 @@ robotMovement.cameraPlace = cameraPosition;
 %% Execute Sorting Tasks
 % Perform sorting tasks using both robots
 % First, execute UR3's task to sort by color
-UR3MovementInstance.ExecuteTask(robotMovement);
+UR3MovementInstance.ExecuteTask();
 
+% After executing the UR3 movement, place gems at the exchange positions
 for i = 1:length(gems)
     % Determine the exchange position based on the gem color
     if strcmp(gems(i).color, 'red')
-        exchangePosition = exchangePositions.red(1, :); % Update based on gem index if needed
+        exchangePosition = robotMovement.exchangePositionsRed(1, :); % Update based on gem index if needed
     elseif strcmp(gems(i).color, 'green')
-        exchangePosition = exchangePositions.green(1, :); % Update based on gem index if needed
+        exchangePosition = robotMovement.exchangePositionsGreen(1, :); % Update based on gem index if needed
     else
         error('Unknown gem color detected.');
     end
-    % Place the gem at the determined exchange position
-    UR3MovementInstance.PlaceGemAtExchange(robotMovement);
+
+    % Move the UR3 to the exchange position for the gem
+    UR3MovementInstance.MoveToPosition(exchangePosition);
+
+    % After moving, mark the gem as sorted
+    gems(i).isSorted = true; % Mark the gem as sorted
     pause(0.5);
 end
 
@@ -121,6 +119,7 @@ end
 robotMovement.ExecuteSortingTask();
 
 disp('Gem sorting process complete.');
+
 
 %% Volume
 % create an instance of the PointCloudTest class
