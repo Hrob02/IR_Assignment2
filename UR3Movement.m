@@ -1,6 +1,6 @@
-classdef DobotMovement
+classdef UR3Movement
     properties
-        Dobot; % Dobot model
+        UR3; % Dobot model
         initialGemPositions; % Initial positions for the gems
         cameraPosition; % Position for camera analysis
         exchangePositions; % Positions to place gems after sorting by color
@@ -11,9 +11,9 @@ classdef DobotMovement
     
     methods
         % Constructor to initialize the Dobot object and properties
-        function obj = DobotMovement(DobotModel, initialGemPositions, cameraPosition, exchangePositions, gems)
+        function obj = UR3Movement(UR3Model, initialGemPositions, cameraPosition, exchangePositions, gems)
             if nargin > 0
-                obj.Dobot = DobotModel;
+                obj.UR3 = UR3Model;
                 obj.steps = 50;
                 obj.initialGemPositions = initialGemPositions;
                 obj.cameraPosition = cameraPosition;
@@ -27,23 +27,23 @@ classdef DobotMovement
             % Convert the (x, y, z) position into a homogeneous transformation
             targetTransform = transl(position(1), position(2), position(3));
             % Solve for joint configuration using IK
-            qFinal = obj.Dobot.model.ikcon(targetTransform, obj.Dobot.model.getpos());
+            qFinal = obj.UR3.model.ikcon(targetTransform, obj.UR3.model.getpos());
             
             % Validate the resulting joint configuration
-            if isempty(qFinal) || length(qFinal) ~= obj.Dobot.model.n
+            if isempty(qFinal) || length(qFinal) ~= obj.UR3.model.n
                 error('Inverse kinematics failed to find a valid solution.');
             end
             
             % Generate trajectory using jtraj
-            path = jtraj(obj.Dobot.model.getpos(), qFinal, obj.steps);
+            path = jtraj(obj.UR3.model.getpos(), qFinal, obj.steps);
             
             % Animate the movement
             for i = 1:obj.steps
-                obj.Dobot.model.animate(path(i, :));
+                obj.UR3.model.animate(path(i, :));
                 
                 % Calculate the current end-effector position using fkine
                 try
-                    currentTransform = obj.Dobot.model.fkine(path(i, :));
+                    currentTransform = obj.UR3.model.fkine(path(i, :));
                 catch
                     error('Forward kinematics calculation failed.');
                 end
