@@ -39,7 +39,7 @@ classdef SetEnvironment
                  'FaceColor', 'texturemap');
             hold on;
 
-            surf([-0.75, -0.75; -0.25, -0.25], ...
+            surf([-1, -1; -0.5, -0.5], ...
                  [-1.3, -0.9; -1.3, -0.9], ...
                  [0.51, 0.51; 0.51, 0.51], ...
                  'CData', imgMat, ...
@@ -80,7 +80,7 @@ classdef SetEnvironment
             set(blueTable, 'Vertices', transformed + position);
 
             % Place Camera
-            PlaceObject('Tripod.ply', [-0.5,-0.5,0]);
+            PlaceObject('Tripod.ply', [-0.75,-0.5,0]);
             
             % Place fire extinguisher
             PlaceObject(obj.FireExtinguisherFile, [-1.5, 2.4, 0.5]);

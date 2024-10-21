@@ -33,7 +33,7 @@ classdef LinearUR3e < RobotBaseClass
             link(4) = Link('d',0,'a',-0.2132,'alpha',0);
             link(5) = Link('d',0.13105,'a',0,'alpha',pi/2);
             link(6) = Link('d',0.08535,'a',0,'alpha',-pi/2);
-            link(7) = Link('d',	0.0921,'a',0,'alpha',0);
+            link(7) = Link('d',	0.17,'a',0,'alpha',0);
             
             % Incorporate joint limits
             link(1).qlim = [0 0.8];
