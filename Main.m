@@ -45,7 +45,7 @@ end
 % Main script to run the UR3 and manage gems
 
 % Initialize the UR3 robot model
-UR3 = LinearUR3e(transl(0.1, -1.1, 0.5) * trotz(pi/2));
+UR3 = LinearUR3e(transl(0.1, -1.1, 0.6) * trotz(pi/2));
 
 % Define initial positions for the gems
 initialGemPositions = [
@@ -250,3 +250,21 @@ robot = LinearUR3e(trotz(pi/2));
 
 %%
 
+% Define the desired joint configurations
+q0 = [-0.7 0 -pi/2 0 0 -pi/2 0];
+q1 = [-0.7 0 pi/2 0 0 -pi/2 0];  % First configuration
+q2 = [-0.5 0 pi/2 0 0 -pi/2 0];  % Second configuration
+
+
+% Create the UR3Movement object (assuming you already have UR3Model and other inputs)
+movementObj = UR3Movement(UR3, initialGemPositions, cameraPosition, exchangePositions, gems);
+
+
+% Move the robot to q0
+movementObj.MoveToJointConfiguration(q0);
+
+% Move the robot to q1
+movementObj.MoveToJointConfiguration(q1);
+
+% Move the robot to q2
+movementObj.MoveToJointConfiguration(q2);
