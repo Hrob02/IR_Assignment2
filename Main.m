@@ -148,11 +148,11 @@ disp('Gem sorting process complete.');
 
 %%
 % Initialize the robot model
-robot = DobotMagician1(transl(0, 0, 0.5));
+robot = LinearUR3e() ;
 
 % Define the initial and next joint configurations
-q_initial = zeros(1,5);         % Initial pose (all zeros)
-q_next = [0 pi/2 0 0 0];      % Next pose (move to this configuration)
+q_initial = zeros(1,7);         % Initial pose (all zeros)
+q_next = [0 pi/2 0 0 0 0 0];      % Next pose (move to this configuration)
 
 % Set the workspace for visualization
 axis([-2 2 -2 2 0 2]);
