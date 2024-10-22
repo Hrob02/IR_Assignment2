@@ -7,7 +7,7 @@ classdef Gem < handle
         isSorted = false; % Status flag to indicate if the gem has been sorted
         vertices % Store vertices of the gem for manipulation
         updatedPoints;
-        endEffectorTransform;
+        %endEffectorTransform;
         UR3; % Reference to UR3 object
         pos;
     end
@@ -19,10 +19,10 @@ classdef Gem < handle
             obj.size = size;
             obj.color = color;
             obj.UR3 = UR3Model; % Store the UR3 instance
-            obj.pos = zeros(1,6);
+            obj.pos = [];
 
             % Calculate the end effector transform using the UR3 instance
-            obj.endEffectorTransform;
+            %obj.endEffectorTransform = eye(4);
 
             % Load the appropriate 3D mesh based on color
             meshFile = '';
@@ -59,7 +59,7 @@ classdef Gem < handle
             end
         end
 
-        function attachToEndEffector(obj, endEffectorTransform)
+        function attachToEndEffector(obj, endEffectorTr)
              % Use a temporary variable for clarity
             verticesTemp = obj.vertices;
         
@@ -73,21 +73,19 @@ classdef Gem < handle
             % Move the midpoint to the origin
             centeredVertices = verticesTemp - midPoint;
 
-            obj.pos = obj.UR3.model.getpos(); % Example if it returns a structure
+            endEffectorTemp = endEffectorTr
 
-            disp(obj.pos);
-
-            obj.endEffectorTransform = obj.UR3.model.fkine(obj.pos);
+            %obj.endEffectorTransform = endEffectorTemp;
         
             % Extract the position from the transformation and ensure it's in the right format
-            newPosition = endEffectorTransform.T'; % Extract the position vector from the transformation
+            newPosition = endEffectorTemp; % Extract the position vector from the transformation
         
             % Update the gem's position
-            obj.position = newPosition; 
+            %obj.position = newPosition; 
             
             % Calculate updated vertices positions using the transformation
             % Apply the transformation to the centered vertices
-            obj.updatedPoints = (endEffectorTransform * [centeredVertices, ones(size(centeredVertices, 1), 1)]')';
+            obj.updatedPoints = (newPosition * [centeredVertices, ones(size(centeredVertices, 1), 1)]')';
             obj.meshHandle.Vertices = obj.updatedPoints(:, 1:3); % Update mesh vertices
         end
 

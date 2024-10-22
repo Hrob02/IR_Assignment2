@@ -38,13 +38,17 @@ classdef UR3Movement
             
             % Animate the movement
             for i = 1:obj.steps
+
+                jointConfig =(path(i,:));
                 
-                obj.UR3.model.animate(path(i, :));
+                obj.UR3.model.animate(jointConfig);
                 
-                %currentTransform = obj.UR3.model.fkine(path(i, :));
+                currentTransform = obj.UR3.model.fkine(jointConfig);
+                disp(size(currentTransform));
+                currentPosition = currentTransform;
                 
                 if isequal(targetTransform(1:3,4)', obj.cameraPosition) || isequal(targetTransform(1:3,4)', obj.exchangePositions)
-                    obj.gems.attachToEndEffector(); % Update the gem position
+                        obj.gems.attachToEndEffector(currentPosition); % Pass the current transform
                 end
                 
                 drawnow;
