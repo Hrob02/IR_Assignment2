@@ -1,5 +1,4 @@
-% Set Up Simulation
-% Set up the figure window and workspace
+%% Set Up Simulation
 figure('Position', [100, 100, 1200, 800]); % [left, bottom, width, height]
 axis([-10 10 -10 10 -5 15]); % [xmin xmax ymin ymax zmin zmax]
 axis equal;
@@ -9,38 +8,18 @@ camtarget([0 0 0]);
 camup([0 0 1]);
 camva(45);
 
-% Lighting and shading
-lighting gouraud;
-shading interp;
-camlight('headlight');
-
 % Labels and title
 xlabel('X-axis');
 ylabel('Y-axis');
 zlabel('Z-axis');
 title('Workspace Setup');
 
-% Create the environment
 env = SetEnvironment();
 
-%% Gem Setup
-% Create gem objects and place them in the environment
-gems = [
-    Gem([0.5, -1.5, 0.5], 'large', 'green')
-    Gem([0.5, -1.3, 0.5], 'small', 'red')
-    Gem([0.5, -1.7, 0.5], 'small', 'red')
-];
-
-% Verify that gems are created properly
-if isempty(gems)
-    error('Gems array is empty. Make sure the gems are properly initialized.');
-end
-
-%% UR3 Control
-% Initialize the UR3 robot model
+%% Initialize the UR3 robot model
 UR3 = LinearUR3e(transl(0.1, -1.1, 0.5) * trotz(pi/2));
 
-% Define initial positions for the gems
+%% Define Initial Positions for the Gems
 initialGemPositions = [
     0.5, -1.3, 0.55;  % Gem 1
     0.5, -1.5, 0.55;  % Gem 2
@@ -48,7 +27,7 @@ initialGemPositions = [
 ];
 
 % Define the camera position for analysis
-cameraPosition = [-0.2, -1.2, 0.55];
+cameraPosition = [-0.5, -1.2, 0.6];
 
 % Define exchange positions for sorting by color
 exchangePositions.red = [
@@ -58,8 +37,27 @@ exchangePositions.green = [
     -0.2, -1.8, 0.55;  % Position for green gems
 ];
 
+%% Gem Setup
+% Create gem objects and place them in the environment
+gems = [
+    Gem([0.5, -1.5, 0.5], 'large', 'green',UR3)
+    Gem([0.5, -1.3, 0.5], 'large', 'red', UR3)
+    Gem([0.5, -1.7, 0.5], 'small', 'red', UR3)
+];
+
+% Verify that gems are created properly
+if isempty(gems)
+    error('Gems array is empty. Make sure the gems are properly initialized.');
+end
+
 % Initialize UR3 Movement with required parameters
 UR3MovementInstance = UR3Movement(UR3, initialGemPositions, cameraPosition, exchangePositions, gems);
+
+%% Execute Sorting Tasks
+% Perform sorting tasks using the UR3
+UR3MovementInstance.ExecuteTask();
+
+disp('Gem sorting process complete.');
 
 %% Robot Control
 % Initialize the ABB robot model
@@ -91,34 +89,34 @@ robotMovement.exchangePositionsGreen = [
 % Set the camera position for analysis
 robotMovement.cameraPlace = cameraPosition;
 
-%% Execute Sorting Tasks
-% Perform sorting tasks using both robots
-% First, execute UR3's task to sort by color
-UR3MovementInstance.ExecuteTask();
-
-% After executing the UR3 movement, place gems at the exchange positions
-for i = 1:length(gems)
-    % Determine the exchange position based on the gem color
-    if strcmp(gems(i).color, 'red')
-        exchangePosition = robotMovement.exchangePositionsRed(1, :); % Update based on gem index if needed
-    elseif strcmp(gems(i).color, 'green')
-        exchangePosition = robotMovement.exchangePositionsGreen(1, :); % Update based on gem index if needed
-    else
-        error('Unknown gem color detected.');
-    end
-
-    % Move the UR3 to the exchange position for the gem
-    UR3MovementInstance.MoveToPosition(exchangePosition);
-
-    % After moving, mark the gem as sorted
-    gems(i).isSorted = true; % Mark the gem as sorted
-    pause(0.5);
-end
-
-% Execute sorting tasks by size using the ABB robot
-robotMovement.ExecuteSortingTask();
-
-disp('Gem sorting process complete.');
+% %% Execute Sorting Tasks
+% % Perform sorting tasks using both robots
+% % First, execute UR3's task to sort by color
+% UR3MovementInstance.ExecuteTask();
+% 
+% % After executing the UR3 movement, place gems at the exchange positions
+% for i = 1:length(gems)
+%     % Determine the exchange position based on the gem color
+%     if strcmp(gems(i).color, 'red')
+%         exchangePosition = robotMovement.exchangePositionsRed(1, :); % Update based on gem index if needed
+%     elseif strcmp(gems(i).color, 'green')
+%         exchangePosition = robotMovement.exchangePositionsGreen(1, :); % Update based on gem index if needed
+%     else
+%         error('Unknown gem color detected.');
+%     end
+% 
+%     % Move the UR3 to the exchange position for the gem
+%     UR3MovementInstance.MoveToPosition(exchangePosition);
+% 
+%     % After moving, mark the gem as sorted
+%     gems(i).isSorted = true; % Mark the gem as sorted
+%     pause(0.5);
+% end
+% 
+% % Execute sorting tasks by size using the ABB robot
+% robotMovement.ExecuteSortingTask();
+% 
+% disp('Gem sorting process complete.');
 
 
 %% Volume

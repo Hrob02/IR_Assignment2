@@ -28,44 +28,29 @@ classdef UR3Movement
             % Convert the (x, y, z) position into a homogeneous transformation
             targetTransform = transl(position(1), position(2), position(3));
             % Solve for joint configuration using IK
-            qFinal = obj.UR3.model.ikcon(targetTransform * trotx(pi), obj.UR3.model.getpos());
+
+            currentq = obj.UR3.model.getpos();
+
+            qFinal = obj.UR3.model.ikcon(targetTransform * trotx(pi), currentq);
         
-            % Validate the resulting joint configuration
-            if isempty(qFinal) || length(qFinal) ~= obj.UR3.model.n
-                error('Inverse kinematics failed to find a valid solution.');
-            end
-            
             % Generate trajectory using jtraj
-            path = jtraj(obj.UR3.model.getpos(), qFinal, obj.steps);
+            path = jtraj(currentq, qFinal, obj.steps);
             
             % Animate the movement
             for i = 1:obj.steps
+                
                 obj.UR3.model.animate(path(i, :));
                 
-                % Calculate the current end-effector position using fkine
-                try
-                    currentTransform = obj.UR3.model.fkine(path(i, :));
-                catch
-                    error('Forward kinematics calculation failed.');
-                end
+                %currentTransform = obj.UR3.model.fkine(path(i, :));
                 
-                % Ensure the currentTransform is a valid 4x4 matrix
-                if size(currentTransform, 1) == 4 && size(currentTransform, 2) == 4
-                    % Extract the end-effector position
-                    gemPosition = currentTransform.T'; % Transpose to convert column to row vector
-                    if ~isempty(obj.currentGem) && isa(obj.currentGem, 'Gem')
-                        % Move and animate the gem with the robot
-                        obj.currentGem.attachToEndEffector(currentTransform); % Update the gem position
-                    end
-                else
-                    warning('The transformation matrix for the robot''s end effector is not of size 4x4.');
+                if isequal(targetTransform(1:3,4)', obj.cameraPosition) || isequal(targetTransform(1:3,4)', obj.exchangePositions)
+                    obj.gems.attachToEndEffector(); % Update the gem position
                 end
                 
                 drawnow;
             end
         end
 
-        
         function PickGem(obj, gemIndex)
             % Check if the gem index is within range and if it's not already sorted
             if gemIndex > 0 && gemIndex <= length(obj.gems) && ~obj.gems(gemIndex).isSorted
@@ -75,19 +60,12 @@ classdef UR3Movement
                     disp(['Picking gem: ', num2str(gemIndex)]);
                     % Move to the initial position of the gem
                     obj.MoveToPosition(obj.currentGem.position);
-                    % Attach the gem to the end effector
-                    endEffectorTransform = obj.UR3.model.fkine(obj.UR3.model.getpos());
-                    obj.currentGem.attachToEndEffector(endEffectorTransform); % Use the updated method
-                    disp('Gem picked successfully.');
-                else
-                    error('The selected object is not a valid Gem.');
+                
                 end
-            else
-                error('Gem index out of range or gem already sorted.');
+            
             end
         end
 
-        
         % Method to analyze the gem using the camera
         function AnalyzeGem(obj)
             % Move to the camera position for analysis
@@ -139,4 +117,3 @@ classdef UR3Movement
         end
     end
 end
-
