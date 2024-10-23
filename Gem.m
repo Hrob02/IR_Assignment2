@@ -5,6 +5,9 @@ classdef Gem < handle
         color % 'red' or 'green'
         meshHandle % Handle for the gem's graphical representation
         isSorted = false; % Status flag to indicate if the gem has been sorted
+        vertices; % Store vertices of the gem for manipulation
+        %endEffectorTransform;
+        pos;
     end
 
     methods
@@ -13,7 +16,11 @@ classdef Gem < handle
             obj.position = position;
             obj.size = size;
             obj.color = color;
-            
+            obj.pos = [];
+
+            % Calculate the end effector transform using the UR3 instance
+            %obj.endEffectorTransform = eye(4);
+
             % Load the appropriate 3D mesh based on color
             meshFile = '';
             if strcmp(color, 'red')
@@ -23,8 +30,10 @@ classdef Gem < handle
             else
                 error('Unsupported gem color: %s', color);
             end
-            [faces, vertices, ~] = plyread(meshFile, 'tri');
             
+            [faces, vertices, ~] = plyread(meshFile, 'tri');
+            obj.vertices = vertices; % Store original vertices
+
             % Scale the mesh based on size
             scale = 1.0; % Default scale for large gems
             if strcmp(size, 'small')
@@ -32,13 +41,14 @@ classdef Gem < handle
             elseif ~strcmp(size, 'large')
                 error('Unsupported gem size: %s', size);
             end
-            vertices = vertices * scale;
             
+            obj.vertices = obj.vertices * scale;
+
             % Create a graphical representation of the gem
             obj.meshHandle = trisurf(faces, ...
-                                     vertices(:, 1) + position(1), ...
-                                     vertices(:, 2) + position(2), ...
-                                     vertices(:, 3) + position(3), ...
+                                     obj.vertices(:, 1) + position(1), ...
+                                     obj.vertices(:, 2) + position(2), ...
+                                     obj.vertices(:, 3) + position(3), ...
                                      'FaceColor', [1 0 0], 'EdgeColor', 'none');
             % Set color-specific properties
             if strcmp(color, 'green')
@@ -46,20 +56,31 @@ classdef Gem < handle
             end
         end
 
-        function MoveToPosition(obj, newPosition)
-            % Method to move the gem to a new position
-            translation = newPosition - obj.position; % Calculate the translation vector
-            obj.position = newPosition; % Update the gem's position
-            % Update the vertices' positions based on the translation
-            newVertices = get(obj.meshHandle, 'Vertices') + translation;
-            set(obj.meshHandle, 'Vertices', newVertices);
-        end
+        function attachToEndEffector(obj, endEffectorTr)
+            % Use a temporary variable for clarity
+            verticesTemp = obj.vertices;
+        
+            VertCount = size(verticesTemp, 1);
+            
+            % Calculate the midpoint of the gem's vertices
+            midPoint = mean(verticesTemp, 1); % Calculate the midpoint
+            GemVerts = verticesTemp - repmat(midPoint, VertCount, 1); % Center the vertices
+        
+            % Define the new position based on the end effector's transformation
+            newPosition = endEffectorTr * transl(0, 0, 0);
+            
+            % Calculate updated vertices positions using the transformation
+            % Apply the transformation to the centered vertices
+            transformedPoints = (newPosition * [GemVerts, ones(VertCount, 1)]')';
+            
+            % Extracting only the x, y, z coordinates
+            updatedPoints = transformedPoints(:, 1:3);
+            
+            % Update mesh vertices if meshHandle is valid
 
-        function DeleteGem(obj)
-            % Method to delete the gem's graphical representation
-            if isvalid(obj.meshHandle)
-                delete(obj.meshHandle);
-            end
+            obj.meshHandle.Vertices = updatedPoints; % Update mesh vertices
+
+            drawnow();
         end
     end
 end

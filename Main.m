@@ -1,5 +1,4 @@
-% Set Up Simulation
-% Set up the figure window and workspace
+%% Set Up Simulation
 figure('Position', [100, 100, 1200, 800]); % [left, bottom, width, height]
 axis([-10 10 -10 10 -5 15]); % [xmin xmax ymin ymax zmin zmax]
 axis equal;
@@ -9,18 +8,12 @@ camtarget([0 0 0]);
 camup([0 0 1]);
 camva(45);
 
-% Lighting and shading
-lighting gouraud;
-shading interp;
-camlight('headlight');
-
 % Labels and title
 xlabel('X-axis');
 ylabel('Y-axis');
 zlabel('Z-axis');
 title('Workspace Setup');
 
-% Create the environment
 env = SetEnvironment();
 
 %% Gem Setup
@@ -146,6 +139,19 @@ q_dropoff = [
    -0.5 pi pi/2 -9*pi/20 0 9*pi/20 0;  % Dropoff for green small gems
    -0.7 pi pi/2 -9*pi/20 0 9*pi/20 0;  % Dropoff for green large gems
 ];
+
+%% Gem Setup
+% Create gem objects and place them in the environment
+gems = [
+    Gem([0.5, -1.5, 0.5], 'large', 'green')
+    Gem([0.5, -1.3, 0.5], 'large', 'red')
+    Gem([0.5, -1.7, 0.5], 'small', 'red')
+];
+
+% Verify that gems are created properly
+if isempty(gems)
+    error('Gems array is empty. Make sure the gems are properly initialized.');
+end
 
 %% UR3 Robot Control
 
