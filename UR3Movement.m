@@ -1,6 +1,5 @@
 classdef UR3Movement
     properties
-        figureHandle;
         gems;
         UR3;
         steps = 50; % Number of steps for the animation
@@ -31,8 +30,7 @@ classdef UR3Movement
     
     methods
         % Constructor to initialize the UR3Movement object
-        function obj = UR3Movement(gems, UR3Model, eStopController,figureHandle)
-            obj.figureHandle = figureHandle;
+        function obj = UR3Movement(gems, UR3Model, eStopController)
             obj.gems = gems;
             obj.UR3 = UR3Model;
             obj.eStopController = eStopController;
@@ -46,14 +44,15 @@ classdef UR3Movement
             obj.ExGreenCart;
         end
 
-        function ExecuteUR3(obj, ~)
+        function ExecuteUR3(obj)
             for i = 1:length(obj.gems)
                 obj.currentGem = obj.gems(i);
                 obj.PickGemUR3(i);
                 obj.AnalyzeGem(i);
                 obj.PlaceGemAtExchange(i);
             end
-            disp('Gem sorting task completed by UR3.');
+            q=zeros(1,7);
+            obj.MoveToJointConfiguration(q);
         end
 
         function PickGemUR3(obj, gemIndex)

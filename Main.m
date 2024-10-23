@@ -433,11 +433,11 @@ env = SetEnvironment(figureHandle);
 
 % Create gem objects and place them in the environment
 gems = [
-    Gem([0.3824, -1.069, 0.5], 'small', 'red');
+    Gem([0.3824, -1.069, 0.5], 'small', 'green');
     Gem([0.3824, -1.269, 0.5], 'large', 'red');
     Gem([0.3824, -1.469, 0.5], 'large', 'green');
     Gem([0.3824, -1.669, 0.5], 'small', 'red');
-    Gem([0.3824, -1.869, 0.5], 'small', 'red'); 
+    Gem([0.3824, -1.869, 0.5], 'large', 'red'); 
     Gem([0.3824, -2.029, 0.5], 'small', 'red'); 
 ];
 
@@ -452,15 +452,23 @@ UR3 = LinearUR3e(transl(-0.15, -1.1, 0.5) * trotz(pi/2));
 robot = ABB120(transl(-1.25, -1.15, 0.5) * trotz(pi/2));
 
 % Create movement instances
-UR3MovementInst = UR3Movement(gems, UR3, eStopController,figureHandle);
-ABBMovementInst = ABBMovement(gems, robot, eStopController,figureHandle);
+UR3MovementInst = UR3Movement(gems, UR3, eStopController);
+ABBMovementInst = ABBMovement(gems, robot, eStopController);
 
-% Use parfeval to run both movements in parallel
-f1 = parfeval(@(fig) UR3MovementInst.ExecuteUR3(),0);
-f2 = parfeval(@(fig) ABBMovementInst.ExecuteRobot(),0);
+UR3MovementInst.ExecuteUR3();
+ABBMovementInst.ExecuteRobot();
 
-% Wait for both functions to complete
-wait(f1);
-wait(f2);
+% % Use parfeval to run both movements in parallel
+% f1 = parfeval(@(inst) inst.ExecuteUR3(),0,UR3MovementInst);
+% f2 = parfeval(@(inst) inst.ExecuteRobot(),0,ABBMovementInst);
+% 
+% % Example synchronization logic
+% if UR3Finished
+%     disp('UR3 finished its task, proceeding with ABB robot.');
+% else
+%     disp('UR3 did not complete its task, ABB robot will wait.');
+%     % Implement any waiting logic if necessary
+% end
+
 
 
