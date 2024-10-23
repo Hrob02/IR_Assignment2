@@ -12,7 +12,7 @@ classdef SetEnvironment
     end
     
     methods
-        function obj = SetEnvironment()
+        function obj = SetEnvironment(~)
             % Initialize environment
             obj.displayEnvironment();
             obj.placeObjects();

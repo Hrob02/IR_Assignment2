@@ -4,7 +4,7 @@ classdef Gem < handle
         size % 'small' or 'large'
         color % 'red' or 'green'
         meshHandle % Handle for the gem's graphical representation
-        isSorted = false; % Status flag to indicate if the gem has been sorted
+        isSorted; % Status flag to indicate if the gem has been sorted
         vertices; % Store vertices of the gem for manipulation
         %endEffectorTransform;
         pos;
@@ -17,6 +17,7 @@ classdef Gem < handle
             obj.size = size;
             obj.color = color;
             obj.pos = [];
+            obj.isSorted = false;
 
             % Calculate the end effector transform using the UR3 instance
             %obj.endEffectorTransform = eye(4);

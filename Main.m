@@ -162,7 +162,7 @@ UR3Finished = false;  % Flag to synchronize UR3 and ABB robots
 eStopController = EStopController();
 
 % Initialize the UR3 robot model
-% UR3 = LinearUR3e(transl(-0.15, -1.1, 0.5) * trotz(pi/2));
+UR3 = LinearUR3e(transl(-0.15, -1.1, 0.5) * trotz(pi/2));
 UR3MovementInstance = RobotMovement(UR3, eStopController);
 
 % Initial starting position of the LinearUR3e robot
@@ -185,7 +185,7 @@ q_dropoff_red_UR3 = [-0.7 0 17*pi/40 0 25*pi/360 -pi/2 0];    % Dropoff for red 
 
 %% ABB Robot Control
 % Initialize the ABB robot model
-% robot = ABB120(transl(-1.25, -1.15, 0.5) * trotz(pi/2));
+robot = ABB120(transl(-1.25, -1.15, 0.5) * trotz(pi/2));
 robotMovement = RobotMovement(robot, eStopController);
 
 % Initial starting position of the ABB robot
@@ -415,5 +415,52 @@ robot.model.fkine(q1)
 % gem position drop off at -0.7 q primatic joint transl(-0.4365,-1.931,0.5533);
 
 % gem position drop off at -0.5 q primatic joint transl(-0.4365,-1.731,0.5533);
+
+
+%% testing 
+
+% Setup figure and axes
+figureHandle = figure('Position', [100, 100, 1200, 800]);
+axis([-10 10 -10 10 -5 15]); % [xmin xmax ymin ymax zmin zmax]
+axis equal;
+view(3);
+xlabel('X-axis');
+ylabel('Y-axis');
+zlabel('Z-axis');
+title('Workspace Setup');
+
+env = SetEnvironment(figureHandle);
+
+% Create gem objects and place them in the environment
+gems = [
+    Gem([0.3824, -1.069, 0.5], 'small', 'red');
+    Gem([0.3824, -1.269, 0.5], 'large', 'red');
+    Gem([0.3824, -1.469, 0.5], 'large', 'green');
+    Gem([0.3824, -1.669, 0.5], 'small', 'red');
+    Gem([0.3824, -1.869, 0.5], 'small', 'red'); 
+    Gem([0.3824, -2.029, 0.5], 'small', 'red'); 
+];
+
+% Flag Initialization
+UR3Finished = false;  % Flag to synchronize UR3 and ABB robots
+
+% Create an instance of EStopController
+eStopController = EStopController();
+
+% Initialize the UR3 robot model
+UR3 = LinearUR3e(transl(-0.15, -1.1, 0.5) * trotz(pi/2));
+robot = ABB120(transl(-1.25, -1.15, 0.5) * trotz(pi/2));
+
+% Create movement instances
+UR3MovementInst = UR3Movement(gems, UR3, eStopController,figureHandle);
+ABBMovementInst = ABBMovement(gems, robot, eStopController,figureHandle);
+
+% Use parfeval to run both movements in parallel
+f1 = parfeval(@(fig) UR3MovementInst.ExecuteUR3(),0);
+f2 = parfeval(@(fig) ABBMovementInst.ExecuteRobot(),0);
+
+% Wait for both functions to complete
+wait(f1);
+wait(f2);
 
 
