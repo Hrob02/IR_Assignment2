@@ -5,20 +5,17 @@ classdef Gem < handle
         color % 'red' or 'green'
         meshHandle % Handle for the gem's graphical representation
         isSorted = false; % Status flag to indicate if the gem has been sorted
-        vertices % Store vertices of the gem for manipulation
-        updatedPoints;
+        vertices; % Store vertices of the gem for manipulation
         %endEffectorTransform;
-        UR3; % Reference to UR3 object
         pos;
     end
 
     methods
-        function obj = Gem(position, size, color, UR3Model)
+        function obj = Gem(position, size, color)
             % Constructor to initialize gem properties
             obj.position = position;
             obj.size = size;
             obj.color = color;
-            obj.UR3 = UR3Model; % Store the UR3 instance
             obj.pos = [];
 
             % Calculate the end effector transform using the UR3 instance
@@ -60,40 +57,30 @@ classdef Gem < handle
         end
 
         function attachToEndEffector(obj, endEffectorTr)
-             % Use a temporary variable for clarity
+            % Use a temporary variable for clarity
             verticesTemp = obj.vertices;
         
-            % Check if vertices are non-empty and have the correct dimensions
-            if isempty(verticesTemp) || size(verticesTemp, 2) ~= 3
-                error('Vertices are empty or incorrectly shaped. Expected a Nx3 matrix.');
-            end
+            VertCount = size(verticesTemp, 1);
             
             % Calculate the midpoint of the gem's vertices
             midPoint = mean(verticesTemp, 1); % Calculate the midpoint
-            % Move the midpoint to the origin
-            centeredVertices = verticesTemp - midPoint;
-
-            endEffectorTemp = endEffectorTr
-
-            %obj.endEffectorTransform = endEffectorTemp;
+            GemVerts = verticesTemp - repmat(midPoint, VertCount, 1); % Center the vertices
         
-            % Extract the position from the transformation and ensure it's in the right format
-            newPosition = endEffectorTemp; % Extract the position vector from the transformation
-        
-            % Update the gem's position
-            %obj.position = newPosition; 
+            % Define the new position based on the end effector's transformation
+            newPosition = endEffectorTr * transl(0, 0, 0);
             
             % Calculate updated vertices positions using the transformation
             % Apply the transformation to the centered vertices
-            obj.updatedPoints = (newPosition * [centeredVertices, ones(size(centeredVertices, 1), 1)]')';
-            obj.meshHandle.Vertices = obj.updatedPoints(:, 1:3); % Update mesh vertices
-        end
+            transformedPoints = (newPosition * [GemVerts, ones(VertCount, 1)]')';
+            
+            % Extracting only the x, y, z coordinates
+            updatedPoints = transformedPoints(:, 1:3);
+            
+            % Update mesh vertices if meshHandle is valid
 
-        function DeleteGem(obj)
-            % Method to delete the gem's graphical representation
-            if isvalid(obj.meshHandle)
-                delete(obj.meshHandle);
-            end
+            obj.meshHandle.Vertices = updatedPoints; % Update mesh vertices
+
+            drawnow();
         end
     end
 end

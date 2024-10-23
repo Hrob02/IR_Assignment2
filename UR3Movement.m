@@ -43,12 +43,16 @@ classdef UR3Movement
                 
                 obj.UR3.model.animate(jointConfig);
                 
-                currentTransform = obj.UR3.model.fkine(jointConfig);
-                disp(size(currentTransform));
-                currentPosition = currentTransform;
+                currentTransform = obj.UR3.model.fkine(jointConfig).T;
+                %disp(size(currentTransform));
+                currentPosition = currentTransform;%(1:3,4);
                 
                 if isequal(targetTransform(1:3,4)', obj.cameraPosition) || isequal(targetTransform(1:3,4)', obj.exchangePositions)
-                        obj.gems.attachToEndEffector(currentPosition); % Pass the current transform
+                    if isempty(obj.currentGem)
+                        error('No gem is currently selected for manipulation.');
+                    end
+    
+                    obj.currentGem.attachToEndEffector(currentPosition); % Pass the current transform
                 end
                 
                 drawnow;
@@ -64,45 +68,57 @@ classdef UR3Movement
                     disp(['Picking gem: ', num2str(gemIndex)]);
                     % Move to the initial position of the gem
                     obj.MoveToPosition(obj.currentGem.position);
-                
                 end
-            
+            else
+                error('Invalid gem index or gem is already sorted.');
             end
         end
 
         % Method to analyze the gem using the camera
-        function AnalyzeGem(obj)
-            % Move to the camera position for analysis
-            obj.MoveToPosition(obj.cameraPosition);
-            % Placeholder for color analysis logic
-            disp('Analyzing gem color...');
+        function AnalyzeGem(obj, gemIndex)
+            % Check if the gem index is valid
+            if gemIndex > 0 && gemIndex <= length(obj.gems)
+                obj.currentGem = obj.gems(gemIndex);
+                if isa(obj.currentGem, 'Gem')
+                    % Move to the camera position for analysis
+                    obj.MoveToPosition(obj.cameraPosition);
+                    % Placeholder for color analysis logic
+                    disp(['Analyzing gem color for gem: ', num2str(gemIndex)]);
+                end
+            end
         end
         
-        function PlaceGemAtExchange(obj)
-            if isempty(obj.currentGem)
-                error('No gem is currently held.');
-            end
-            if ~isa(obj.currentGem, 'Gem')
-                error('The current gem is not a valid Gem object.');
-            end
-        
-            color = obj.currentGem.color;
-            if strcmp(color, 'red')
-                exchangePos = obj.exchangePositions.red(1, :);
-            elseif strcmp(color, 'green')
-                exchangePos = obj.exchangePositions.green(1, :);
+        function PlaceGemAtExchange(obj, gemIndex)
+            % Check if the gem index is valid
+            if gemIndex > 0 && gemIndex <= length(obj.gems)
+                obj.currentGem = obj.gems(gemIndex);
+                if isempty(obj.currentGem)
+                    error('No gem is currently held.');
+                end
+                if ~isa(obj.currentGem, 'Gem')
+                    error('The current gem is not a valid Gem object.');
+                end
+            
+                color = obj.currentGem.color;
+                if strcmp(color, 'red')
+                    exchangePos = obj.exchangePositions.red(1, :);
+                elseif strcmp(color, 'green')
+                    exchangePos = obj.exchangePositions.green(1, :);
+                else
+                    disp(['Unknown color detected: ', color]);
+                    return;
+                end
+            
+                % Move to the determined exchange position
+                obj.MoveToPosition(exchangePos);
+                % Simulate placing the gem at the exchange position
+                %obj.currentGem.MoveToPosition(exchangePos);
+                obj.currentGem.isSorted = true; % Mark the gem as sorted
+                disp(['Gem placed at exchange position for ', color, ' gem.']);
+                obj.currentGem = []; % Clear the current gem after placing
             else
-                disp(['Unknown color detected: ', color]);
-                return;
+                error('Invalid gem index for placing at exchange.');
             end
-        
-            % Move to the determined exchange position
-            obj.MoveToPosition(exchangePos);
-            % Simulate placing the gem at the exchange position
-            obj.currentGem.MoveToPosition(exchangePos);
-            obj.currentGem.isSorted = true; % Mark the gem as sorted
-            disp(['Gem placed at exchange position for ', color, ' gem.']);
-            obj.currentGem = []; % Clear the current gem after placing
         end
 
         function ExecuteTask(obj)
@@ -112,9 +128,9 @@ classdef UR3Movement
                     % Pick the gem
                     obj.PickGem(i);
                     % Analyze the gem color
-                    obj.AnalyzeGem();
+                    obj.AnalyzeGem(i);
                     % Place gem at the corresponding exchange position
-                    obj.PlaceGemAtExchange();
+                    obj.PlaceGemAtExchange(i);
                 end
             end
             disp('Gem sorting task completed.');

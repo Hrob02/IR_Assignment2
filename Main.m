@@ -40,9 +40,9 @@ exchangePositions.green = [
 %% Gem Setup
 % Create gem objects and place them in the environment
 gems = [
-    Gem([0.5, -1.5, 0.5], 'large', 'green', UR3)
-    Gem([0.5, -1.3, 0.5], 'large', 'red', UR3)
-    Gem([0.5, -1.7, 0.5], 'small', 'red', UR3)
+    Gem([0.5, -1.5, 0.5], 'large', 'green')
+    Gem([0.5, -1.3, 0.5], 'large', 'red')
+    Gem([0.5, -1.7, 0.5], 'small', 'red')
 ];
 
 % Verify that gems are created properly
