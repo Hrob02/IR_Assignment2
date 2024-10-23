@@ -31,3 +31,10 @@ codegen/
 
 # Cloud based storage dotfile
 .MATLABDriveTag
+EmergencyStop.m
+CheckIntersections.m
+IsCollision.m
+Lab5_Solution_Question1.m
+Lab5_Solution_Question2and3.m
+RectangularPrism.m
+RobotManager.m

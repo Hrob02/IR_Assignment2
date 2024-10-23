@@ -1,4 +1,4 @@
-classdef UR3Movement
+classdef UR3Movement 
     properties
         UR3; % UR3 model
         steps = 50; % Number of steps for the animation
