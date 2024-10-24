@@ -24,28 +24,25 @@ gems = [
     Gem([0.3824, -2.029, 0.5], 'small', 'red'); 
 ];
 
-% Flag Initialization
-UR3Finished = false;  % Flag to synchronize UR3 and ABB robots
+% Define models for the UR3 and ABB robots
+UR3Model = LinearUR3e(transl(-0.15, -1.1, 0.5) * trotz(pi/2));
+ABBModel = ABB120(transl(-1.25, -1.15, 0.5) * trotz(pi/2));
+%%
 
-% Create an instance of EStopController
-eStopController = EStopController();
+% Step 1: Create an instance of EStopController
+eStopController = EStopController();  % Create a shared EStopController instance
 
-% Initialize the UR3 robot model
-UR3 = LinearUR3e(transl(-0.15, -1.1, 0.5) * trotz(pi/2));
-robot = ABB120(transl(-1.25, -1.15, 0.5) * trotz(pi/2));
+% Step 2: Create instances of UR3Movement and ABBMovement with the shared EStopController
+ur3Movement = UR3Movement(gems, UR3Model, eStopController);  % Create UR3Movement instance
+abbMovement = ABBMovement(gems, ABBModel, eStopController);  % Create ABBMovement instance
 
-%% Create movement instances
+% Step 3: Instantiate the GUI and pass the movement instances
+app = app1;  % Create an instance of your app
+app.initializeAppWithInstances(ur3Movement, abbMovement, eStopController);  % Pass the movement instances
 
-UR3MovementInst = UR3Movement(gems, UR3, eStopController);
-ABBMovementInst = ABBMovement(gems, robot, eStopController);
-
-
-%% Main loop
-
+%% Main loop using the instances from the app
 for i = 1:length(gems)
-    UR3MovementInst.ExecuteUR3(i);
-    ABBMovementInst.ExecuteRobot(i);
+    % Execute the movement using the instances stored in the app
+    app.UR3MovementInst.ExecuteUR3(i);
+    app.ABBMovementInst.ExecuteRobot(i);
 end
-
-
-
