@@ -87,7 +87,6 @@ classdef UR3Movement
                 disp(['Gem color: ', color]);
                 pause(1);
                 disp(['UR3 Robot moving to drop-off location for ', color,' Gem.']);
-                pause(1);
                 obj.MoveToJointConfiguration(exchangeq);
                 obj.currentGem.isSorted = true; % Mark the gem as sorted
                 disp(['Gem placed at exchange position for ', color, ' gem.']);

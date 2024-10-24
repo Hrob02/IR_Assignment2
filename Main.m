@@ -407,7 +407,7 @@ grid on;
  % q1 = [-0.2 pi -pi/2 0 0 0 0]; % Camera q value for UR3e
 
  %%
-q1 = [-0.7 0 pi/2 -7*pi/20 0 7*pi/20 0]; % pick up for gem
+q1 = [0 -pi/2 0 0 0 0 0]; % pick up for gem
 robot.model.animate(q1);
 
 robot.model.fkine(q1)
@@ -453,15 +453,17 @@ eStopController = EStopController();
 UR3 = LinearUR3e(transl(-0.15, -1.1, 0.5) * trotz(pi/2));
 robot = ABB120(transl(-1.25, -1.15, 0.5) * trotz(pi/2));
 
+%%
 % Create movement instances
 UR3MovementInst = UR3Movement(gems, UR3, eStopController);
 ABBMovementInst = ABBMovement(gems, robot, eStopController);
 
 
 %%
-UR3MovementInst.ExecuteUR3(1);
-ABBMovementInst.ExecuteRobot(1);
-
+for i = 1:length(gems)
+    UR3MovementInst.ExecuteUR3(i);
+    ABBMovementInst.ExecuteRobot(i);
+end
 % % Use parfeval to run both movements in parallel
 % f1 = parfeval(@(inst) inst.ExecuteUR3(),0,UR3MovementInst);
 % f2 = parfeval(@(inst) inst.ExecuteRobot(),0,ABBMovementInst);

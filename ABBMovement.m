@@ -5,8 +5,8 @@ classdef ABBMovement
         steps = 50; % Number of steps for the animation
         eStopController; % Reference to the shared emergency stop controller
         q_cam =[-0.02 0 pi/2 -3*pi/10 pi/2 pi/2 0];
-        q_dropoff_green = [-0.5, 0, 17*pi/40, 0, 25*pi/360, -pi/2, 0];  % Dropoff for green gems
-        q_dropoff_red = [-0.7, 0, 17*pi/40, 0, 25*pi/360, -pi/2, 0];    % Dropoff for red gems
+        q_pickup_green = [-0.5 0 pi/2 -7*pi/20 0 7*pi/20 0];   % Pickup for green gems
+        q_pickup_red = [-0.7 0 pi/2 -7*pi/20 0 7*pi/20 0];    % Pickup for red gems
         q_dropoff_ABB = [
            -0.1, pi, pi/2, -9*pi/20, 0, 9*pi/20, 0;  % Dropoff for red small gems
            -0.3, pi, pi/2, -9*pi/20, 0, 9*pi/20, 0;  % Dropoff for red large gems
@@ -22,8 +22,8 @@ classdef ABBMovement
             obj.gems = gems;
             obj.robot = robotModel;
             obj.eStopController = eStopController;
-            obj.q_dropoff_green;
-            obj.q_dropoff_red;
+            obj.q_pickup_green;
+            obj.q_pickup_red;
             obj.q_dropoff_ABB;
             obj.currentGem = []; % Initialize as empty
         end
@@ -35,7 +35,7 @@ classdef ABBMovement
                 obj.AnalyzeGem(gemIndex);
                 obj.PlaceGemSorting(gemIndex);
             end
-            q = zeros(1, 7);
+            q = [0 -pi/2 0 0 0 0 0];
             obj.MoveToJointConfiguration(q);
         end
 
@@ -45,9 +45,9 @@ classdef ABBMovement
                 obj.currentGem = obj.gems(gemIndex);
                 color = obj.currentGem.color;
                 if strcmp(color, 'red')
-                    pickupq = obj.q_dropoff_red;
+                    pickupq = obj.q_pickup_red;
                 elseif strcmp(color, 'green')
-                    pickupq = obj.q_dropoff_green;
+                    pickupq = obj.q_pickup_green;
                 else
                     disp(['Unknown color detected: ', color]);
                     return;
