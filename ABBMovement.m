@@ -28,20 +28,14 @@ classdef ABBMovement
             obj.currentGem = []; % Initialize as empty
         end
 
-        function ExecuteRobot(obj)
-            pause(1);
-            size(obj.gems)
-            for i = 1:length(obj.gems)
-                obj.currentGem = obj.gems(i);
-                % while obj.currentGem.isSorted == false % Check if the current gem is sorted
-                %     pause(1); % Optional: wait for a second before checking again
-                % end
-                % disp(['Executing ABB robot for gem index: ', num2str(i)]);
-                obj.PickGemABB(i);
-                obj.AnalyzeGem(i);
-                obj.PlaceGemSorting(i);
+        function ExecuteRobot(obj, gemIndex)
+            if gemIndex > 0 && gemIndex <= length(obj.gems)
+                obj.currentGem = obj.gems(gemIndex);
+                obj.PickGemABB(gemIndex);
+                obj.AnalyzeGem(gemIndex);
+                obj.PlaceGemSorting(gemIndex);
             end
-            q=zeros(1,7);
+            q = zeros(1, 7);
             obj.MoveToJointConfiguration(q);
         end
 

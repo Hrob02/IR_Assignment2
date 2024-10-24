@@ -459,8 +459,8 @@ ABBMovementInst = ABBMovement(gems, robot, eStopController);
 
 
 %%
-UR3MovementInst.ExecuteUR3();
-ABBMovementInst.ExecuteRobot();
+UR3MovementInst.ExecuteUR3(1);
+ABBMovementInst.ExecuteRobot(1);
 
 % % Use parfeval to run both movements in parallel
 % f1 = parfeval(@(inst) inst.ExecuteUR3(),0,UR3MovementInst);

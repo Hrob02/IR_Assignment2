@@ -44,14 +44,14 @@ classdef UR3Movement
             obj.ExGreenCart;
         end
 
-        function ExecuteUR3(obj)
-            for i = 1:length(obj.gems)
-                obj.currentGem = obj.gems(i);
-                obj.PickGemUR3(i);
-                obj.AnalyzeGem(i);
-                obj.PlaceGemAtExchange(i);
+       function ExecuteUR3(obj, gemIndex)
+            if gemIndex > 0 && gemIndex <= length(obj.gems)
+                obj.currentGem = obj.gems(gemIndex);
+                obj.PickGemUR3(gemIndex);
+                obj.AnalyzeGem(gemIndex);
+                obj.PlaceGemAtExchange(gemIndex);
             end
-            q=zeros(1,7);
+            q = zeros(1, 7);
             obj.MoveToJointConfiguration(q);
         end
 
