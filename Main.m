@@ -431,6 +431,8 @@ title('Workspace Setup');
 
 env = SetEnvironment(figureHandle);
 
+%%
+
 % Create gem objects and place them in the environment
 gems = [
     Gem([0.3824, -1.069, 0.5], 'small', 'green');
@@ -455,6 +457,8 @@ robot = ABB120(transl(-1.25, -1.15, 0.5) * trotz(pi/2));
 UR3MovementInst = UR3Movement(gems, UR3, eStopController);
 ABBMovementInst = ABBMovement(gems, robot, eStopController);
 
+
+%%
 UR3MovementInst.ExecuteUR3();
 ABBMovementInst.ExecuteRobot();
 

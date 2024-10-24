@@ -59,13 +59,16 @@ classdef UR3Movement
             if gemIndex > 0 && gemIndex <= length(obj.q_pickup_UR3)
                 obj.currentGem = obj.q_pickup_UR3(gemIndex);
                 obj.MoveToJointConfiguration(obj.q_pickup_UR3(gemIndex,:));
+                disp(['UR3 Robot picking up Gem ',  num2str(gemIndex)]);
+                pause(2);  % Wait for 2 second
             end
         end
 
         function AnalyzeGem(obj, gemIndex)
             if gemIndex > 0 && gemIndex <= length(obj.q_pickup_UR3)
                 obj.MoveToJointConfiguration(obj.q_cam);
-                disp(['Analyzing gem color for gem: ', num2str(gemIndex)]);
+                disp(['UR3 Robot analyzing Gem ', num2str(gemIndex), ' at the camera.']);
+                pause(2);
             end
         end
 
@@ -80,11 +83,17 @@ classdef UR3Movement
                     disp(['Unknown color detected: ', color]);
                     return;
                 end
+
+                disp(['Gem color: ', color]);
+                pause(1);
+                disp(['UR3 Robot moving to drop-off location for ', color,' Gem.']);
+                pause(1);
                 obj.MoveToJointConfiguration(exchangeq);
                 obj.currentGem.isSorted = true; % Mark the gem as sorted
                 disp(['Gem placed at exchange position for ', color, ' gem.']);
                 obj.currentGem = []; % Clear the current gem after placing
             end
+            pause(2);
         end
 
         function MoveToJointConfiguration(obj, qValues)

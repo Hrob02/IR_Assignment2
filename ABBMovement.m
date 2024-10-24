@@ -59,6 +59,8 @@ classdef ABBMovement
                     return;
                 end
                 obj.MoveToJointConfiguration(pickupq);
+                disp(['ABB Robot picking up Gem ',  num2str(gemIndex)]);
+                pause(2);  % Wait for 2 second
             end
         end
 
@@ -66,7 +68,8 @@ classdef ABBMovement
         function AnalyzeGem(obj, gemIndex)
             if gemIndex > 0 && gemIndex <= length(obj.gems)
                 obj.MoveToJointConfiguration(obj.q_cam);
-                disp(['Analyzing gem color for gem: ', num2str(gemIndex)]);
+                disp(['ABB Robot analyzing Gem ', num2str(gemIndex), ' at the camera.']);
+                pause(2);
             end
         end
 
@@ -78,12 +81,32 @@ classdef ABBMovement
                 color = obj.currentGem.color;
                 GemSize = obj.currentGem.size;
                 if strcmp(color, 'red') && strcmp(GemSize, 'small')
+                    disp(['Gem color: ', color]);
+                    disp(['Gem size: ', GemSize]);
+                    pause(1);
+                    disp('ABB Robot moving to drop-off location for small Red Gem.');
+                    pause(1);
                     exchangeq = obj.q_dropoff_ABB(1,:);
                 elseif strcmp(color, 'red') && strcmp(GemSize,'large')
+                    disp(['Gem color: ', color]);
+                    disp(['Gem size: ', GemSize]);
+                    pause(1);
+                    disp('ABB Robot moving to drop-off location for large Red Gem.');
+                    pause(1);
                     exchangeq = obj.q_dropoff_ABB(2,:);
                 elseif strcmp(color, 'green') && strcmp(GemSize,'small')
+                    disp(['Gem color: ', color]);
+                    disp(['Gem size: ', GemSize]);
+                    pause(1);
+                    disp('ABB Robot moving to drop-off location for small Green Gem.');
+                    pause(1);
                     exchangeq = obj.q_dropoff_ABB(3,:);
                 elseif strcmp(color, 'green') && strcmp(GemSize,'large')
+                    disp(['Gem color: ', color]);
+                    disp(['Gem size: ', GemSize]);
+                    pause(1);
+                    disp('ABB Robot moving to drop-off location for large Green Gem.');
+                    pause(1);
                     exchangeq = obj.q_dropoff_ABB(4,:);
                 end
             
@@ -91,7 +114,8 @@ classdef ABBMovement
                 obj.MoveToJointConfiguration(exchangeq);
                 % Simulate placing the gem at the exchange position
                 % obj.currentGem.isSorted = true; % Mark the gem as sorted
-                disp(['Gem placed at exchange position for ', color, ' gem.']);
+                pause(2);
+                disp(['Gem placed at final position for ', GemSize,' ', color, ' gem.']);
                 obj.currentGem = []; % Clear the current gem after placing
             end
         end
