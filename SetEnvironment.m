@@ -12,7 +12,7 @@ classdef SetEnvironment
     end
     
     methods
-        function obj = SetEnvironment()
+        function obj = SetEnvironment(~)
             % Initialize environment
             obj.displayEnvironment();
             obj.placeObjects();
@@ -121,16 +121,16 @@ classdef SetEnvironment
                  set(obj, 'Vertices', transformed + pos);
              end
 
-             sortingTable = [-2,-2.05,0.65; -2,-1.45,0.65; -0.5,-2.05,0.55];
-             for i = 1:size(sortingTable)
-                 Shelves = PlaceObject('bookcaseTwoShelves0.5x0.2x0.5m.ply', [sortingTable(i,:)]);
-                 vertices = get(Shelves, 'Vertices');
-                 pos = [sortingTable(i,:)]; % Update with actual position if necessary
-                 centered = vertices - pos;
-                 rotationMatrix = trotx(-pi/2); % Example rotation
-                 transformed = (rotationMatrix(1:3, 1:3) * centered')';
-                 set(Shelves, 'Vertices', transformed + pos);
-             end
+             % sortingTable = [-2,-2.05,0.65; -2,-1.45,0.65; -0.5,-2.05,0.55];
+             % for i = 1:size(sortingTable)
+             %     Shelves = PlaceObject('bookcaseTwoShelves0.5x0.2x0.5m.ply', [sortingTable(i,:)]);
+             %     vertices = get(Shelves, 'Vertices');
+             %     pos = [sortingTable(i,:)]; % Update with actual position if necessary
+             %     centered = vertices - pos;
+             %     rotationMatrix = trotx(-pi/2); % Example rotation
+             %     transformed = (rotationMatrix(1:3, 1:3) * centered')';
+             %     set(Shelves, 'Vertices', transformed + pos);
+             % end
         end
     end
 end
