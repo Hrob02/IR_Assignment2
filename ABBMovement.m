@@ -21,7 +21,7 @@ classdef ABBMovement
             -1.82,-1.5,0.53;
             -1.82,-1.65,0.53;
             -1.82,-1.8,0.53];
-        CurrentPos=[-1.25,-1.62,-1.13];
+        InitialCart;
     end
     
     methods
@@ -38,10 +38,12 @@ classdef ABBMovement
             obj.ExRedCart;
             obj.ExGreenCart;
             obj.DropCart;
-            obj.CurrentPos;
+            obj.InitialCart;
         end
 
         function ExecuteRobot(obj, gemIndex)
+            qInitial = obj.robot.model.getpos();
+            obj.InitialCart = obj.robot.model.fkine(qInitial).t;
             if gemIndex > 0 && gemIndex <= length(obj.gems)
                 obj.currentGem = obj.gems(gemIndex);
                 obj.PickGemABB(gemIndex);
@@ -49,7 +51,7 @@ classdef ABBMovement
                 obj.PlaceGemSorting(gemIndex);
             end
             q = [0 -pi/2 0 0 0 0 0];
-            obj.MoveToJointConfiguration(obj.CurrentPos,q);
+            obj.MoveToJointConfiguration(obj.InitialCart',q);
         end
 
 
@@ -96,7 +98,7 @@ classdef ABBMovement
                     disp('ABB Robot moving to drop-off location for small Red Gem.');
                     pause(1);
                     exchangeq = obj.q_dropoff_ABB(1,:);
-                    SortCart = obj.DropCart(1);
+                    SortCart = obj.DropCart(1,:);
                 elseif strcmp(color, 'red') && strcmp(GemSize,'large')
                     disp(['Gem color: ', color]);
                     disp(['Gem size: ', GemSize]);
@@ -104,7 +106,7 @@ classdef ABBMovement
                     disp('ABB Robot moving to drop-off location for large Red Gem.');
                     pause(1);
                     exchangeq = obj.q_dropoff_ABB(2,:);
-                    SortCart = obj.DropCart(2);
+                    SortCart = obj.DropCart(2,:);
                 elseif strcmp(color, 'green') && strcmp(GemSize,'small')
                     disp(['Gem color: ', color]);
                     disp(['Gem size: ', GemSize]);
@@ -112,7 +114,7 @@ classdef ABBMovement
                     disp('ABB Robot moving to drop-off location for small Green Gem.');
                     pause(1);
                     exchangeq = obj.q_dropoff_ABB(3,:);
-                    SortCart = obj.DropCart(3);
+                    SortCart = obj.DropCart(3,:);
                 elseif strcmp(color, 'green') && strcmp(GemSize,'large')
                     disp(['Gem color: ', color]);
                     disp(['Gem size: ', GemSize]);
@@ -120,7 +122,7 @@ classdef ABBMovement
                     disp('ABB Robot moving to drop-off location for large Green Gem.');
                     pause(1);
                     exchangeq = obj.q_dropoff_ABB(4,:);
-                    SortCart = obj.DropCart(4);
+                    SortCart = obj.DropCart(4,:);
                 end
             
                 % Move to the determined exchange position
@@ -137,7 +139,7 @@ classdef ABBMovement
             qCurrent = obj.robot.model.getpos();
             if isequal(pos,obj.CamCart)
                 position = transl(pos(1),pos(2),pos(3))*trotx(pi/2);
-            elseif isequal(pos,obj.CurrentPos)
+            elseif isequal(pos,obj.InitialCart)
                 position = transl(pos(1),pos(2),pos(3));
             else
                 position = transl(pos(1),pos(2),pos(3)+0.05);
