@@ -46,3 +46,9 @@ for i = 1:length(gems)
     app.UR3MovementInst.ExecuteUR3(i);
     app.ABBMovementInst.ExecuteRobot(i);
 end
+
+
+%%
+% Move to a specific Cartesian coordinate (example: x = 0.4, y = -0.3, z = 0.6)
+ur3Movement = UR3Movement(gems, UR3Model, eStopController);  % Create UR3Movement instance
+ur3Movement.MoveToCartesian(0.3824, -1.069, 0.59);
