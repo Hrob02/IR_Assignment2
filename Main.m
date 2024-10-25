@@ -20,8 +20,8 @@ env = SetEnvironment(figureHandle);
 
 % Create gem objects and place them in the environment
 gems = [
-    Gem([0.4, -1.2, 0.53], 'small', 'green');
-    Gem([0.4, -1.35, 0.53], 'large', 'red');
+    Gem([0.4, -1.2, 0.53], 'small', 'red');
+    Gem([0.4, -1.35, 0.53], 'small', 'green');
     Gem([0.4, -1.5, 0.53], 'large', 'red');
     Gem([0.4, -1.65, 0.53], 'small', 'red');
     Gem([0.4, -1.8, 0.53], 'large', 'green'); 

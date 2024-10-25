@@ -17,7 +17,7 @@ classdef ABBMovement
         CamCart = [-0.7,-1.2,0.65];
         ExRedCart = [-0.67,-1.85,0.48];
         ExGreenCart = [-0.67,-1.7,0.48];
-        DropCart = [-1.82,1.35,0.53;
+        DropCart = [-1.82,-1.35,0.53;
             -1.82,-1.5,0.53;
             -1.82,-1.65,0.53;
             -1.82,-1.8,0.53];
@@ -50,8 +50,8 @@ classdef ABBMovement
                 obj.AnalyzeGem(gemIndex);
                 obj.PlaceGemSorting(gemIndex);
             end
-            q = [0 -pi/2 0 0 0 0 0];
-            obj.MoveToJointConfiguration(obj.InitialCart',q);
+            % q = [0 -pi/2 0 0 0 0 0];
+            obj.MoveToJointConfiguration(obj.InitialCart',qInitial);
         end
 
 
