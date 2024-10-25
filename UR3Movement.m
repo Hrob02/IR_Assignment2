@@ -105,10 +105,6 @@ classdef UR3Movement
             qFinal=obj.UR3.model.ikcon(position* trotx(pi),qValues);
             path = jtraj(qCurrent, qFinal, obj.steps);
 
-        function MoveToJointConfiguration(obj, qValues)
-            qCurrent = obj.UR3.model.getpos();  % Get current joint positions
-            path = jtraj(qCurrent, qValues, obj.steps);  % Generate a joint trajectory
-        
             i = 1;  % Initialize the loop index
         
             % Loop through each step in the trajectory

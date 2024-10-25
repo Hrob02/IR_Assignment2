@@ -144,6 +144,8 @@ classdef ABBMovement
             end
             qFinal=obj.robot.model.ikcon(position* trotx(pi),qValues);
             path = jtraj(qCurrent, qFinal, obj.steps);
+
+            i=1;
             
             % Loop through each step in the trajectory
             while i <= obj.steps
