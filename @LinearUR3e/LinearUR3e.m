@@ -2,6 +2,7 @@ classdef LinearUR3e < RobotBaseClass
     %% LinearUR3e UR3e on a non-standard linear rail created by a student
     properties(Access = public)              
         plyFileNameStem = 'LinearUR3e';
+       
     end
     
     methods

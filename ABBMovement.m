@@ -144,30 +144,46 @@ classdef ABBMovement
             end
             qFinal=obj.robot.model.ikcon(position* trotx(pi),qValues);
             path = jtraj(qCurrent, qFinal, obj.steps);
-
-            for i = 1:obj.steps
+            
+            % Loop through each step in the trajectory
+            while i <= obj.steps
+                % Check if emergency stop is engaged
                 if obj.eStopController.eStopEngaged
                     disp('Movement halted due to emergency stop.');
+        
+                    % Wait until the emergency stop is disengaged
                     while obj.eStopController.eStopEngaged
-                        pause(0.1);
+                        pause(0.1);  % Introduce a small pause to avoid busy-waiting
                     end
+                    
                     disp('Resuming movement...');
                 end
-                
+        
+                % Animate the robot to the current step of the trajectory
                 obj.robot.model.animate(path(i, :));
-                jointConfig = path(i,:);
+                jointConfig = path(i, :);  % Get the current joint configuration
+        
+                % Calculate and check the current and target transforms
                 targetTransform = obj.robot.model.fkine(qValues).T;
                 currentTransform = obj.robot.model.fkine(jointConfig).T;
                 cameraPosition = obj.robot.model.fkine(obj.q_cam).T;
-                SortRedsmol = obj.robot.model.fkine(obj.q_dropoff_ABB(1,:)).T;
-                SortRedbig = obj.robot.model.fkine(obj.q_dropoff_ABB(2,:)).T;
-                SortGreensmol = obj.robot.model.fkine(obj.q_dropoff_ABB(3,:)).T;
-                SortGreenbig = obj.robot.model.fkine(obj.q_dropoff_ABB(4,:)).T;
-               
-                if isequal(targetTransform(1:3,4)', cameraPosition(1:3,4)') || isequal(targetTransform(1:3,4)', SortRedsmol(1:3,4)')|| isequal(targetTransform(1:3,4)', SortGreensmol(1:3,4)')|| isequal(targetTransform(1:3,4)', SortRedbig(1:3,4)')|| isequal(targetTransform(1:3,4)', SortGreenbig(1:3,4)')
-                    obj.currentGem.attachToEndEffector(currentTransform); % Pass the current transform
+                SortRedsmol = obj.robot.model.fkine(obj.q_dropoff_ABB(1, :)).T;
+                SortRedbig = obj.robot.model.fkine(obj.q_dropoff_ABB(2, :)).T;
+                SortGreensmol = obj.robot.model.fkine(obj.q_dropoff_ABB(3, :)).T;
+                SortGreenbig = obj.robot.model.fkine(obj.q_dropoff_ABB(4, :)).T;
+        
+                % Attach the current gem if the position matches certain target locations
+                if isequal(targetTransform(1:3, 4)', cameraPosition(1:3, 4)') || ...
+                   isequal(targetTransform(1:3, 4)', SortRedsmol(1:3, 4)') || ...
+                   isequal(targetTransform(1:3, 4)', SortGreensmol(1:3, 4)') || ...
+                   isequal(targetTransform(1:3, 4)', SortRedbig(1:3, 4)') || ...
+                   isequal(targetTransform(1:3, 4)', SortGreenbig(1:3, 4)')
+                    obj.currentGem.attachToEndEffector(currentTransform);  % Attach the gem at the current transform
                 end
-                drawnow;
+        
+                drawnow;  % Refresh the plot
+        
+                i = i + 1;  % Increment the loop index
             end
         end
     end
