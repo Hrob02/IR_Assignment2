@@ -69,7 +69,7 @@ classdef SetEnvironment
         
         function placeObjects(obj)
             % Place table
-            PlaceObject(obj.TableFile, [-0.5, -1.5, 0]);
+            PlaceObject(obj.TableFile, [-0.5, -1.5, 0.0]);
 
             blueTable = PlaceObject('tableBlue1x1x0.5m.ply', [-2.1, -1.5, 0]);
             vertices = get(blueTable, 'Vertices');

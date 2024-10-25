@@ -95,17 +95,7 @@ classdef UR3Movement
             pause(2);
         end
 
-        function MoveToCartesian(obj, x, y, z)
-            % Define the desired end-effector transformation matrix
-            targetTransform = transl(x, y, z) * trotx(0) * troty(0) * trotz(0); % Modify this if you need specific end-effector orientation
-            
-            % Use inverse kinematics to find the joint angles
-            qCurrent = obj.UR3.model.getpos(); % Get the current joint configuration
-            qNew = obj.UR3.model.ikcon(targetTransform, qCurrent); % Solve for the new joint configuration
         
-            % Move to the computed joint configuration using the existing method
-            obj.MoveToJointConfiguration(qNew);
-        end
 
         function MoveToJointConfiguration(obj, qValues)
             qCurrent = obj.UR3.model.getpos();  % Get current joint positions
