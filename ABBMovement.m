@@ -14,6 +14,14 @@ classdef ABBMovement
            -0.7, pi, pi/2, -9*pi/20, 0, 9*pi/20, 0;  % Dropoff for green large gems
         ];
         currentGem;
+        CamCart = [-0.7,-1.2,0.65];
+        ExRedCart = [-0.67,-1.85,0.48];
+        ExGreenCart = [-0.67,-1.7,0.48];
+        DropCart = [-1.82,1.35,0.53;
+            -1.82,-1.5,0.53;
+            -1.82,-1.65,0.53;
+            -1.82,-1.8,0.53];
+        CurrentPos=[-1.25,-1.62,-1.13];
     end
     
     methods
@@ -26,6 +34,11 @@ classdef ABBMovement
             obj.q_pickup_red;
             obj.q_dropoff_ABB;
             obj.currentGem = []; % Initialize as empty
+            obj.CamCart;
+            obj.ExRedCart;
+            obj.ExGreenCart;
+            obj.DropCart;
+            obj.CurrentPos;
         end
 
         function ExecuteRobot(obj, gemIndex)
@@ -36,7 +49,7 @@ classdef ABBMovement
                 obj.PlaceGemSorting(gemIndex);
             end
             q = [0 -pi/2 0 0 0 0 0];
-            obj.MoveToJointConfiguration(q);
+            obj.MoveToJointConfiguration(obj.CurrentPos,q);
         end
 
 
@@ -46,13 +59,15 @@ classdef ABBMovement
                 color = obj.currentGem.color;
                 if strcmp(color, 'red')
                     pickupq = obj.q_pickup_red;
+                    ExPos = obj.ExRedCart;
                 elseif strcmp(color, 'green')
                     pickupq = obj.q_pickup_green;
+                    ExPos = obj.ExGreenCart;
                 else
                     disp(['Unknown color detected: ', color]);
                     return;
                 end
-                obj.MoveToJointConfiguration(pickupq);
+                obj.MoveToJointConfiguration(ExPos,pickupq);
                 disp(['ABB Robot picking up Gem ',  num2str(gemIndex)]);
                 pause(2);  % Wait for 2 second
             end
@@ -61,7 +76,7 @@ classdef ABBMovement
         % Method to analyze the gem using the camera
         function AnalyzeGem(obj, gemIndex)
             if gemIndex > 0 && gemIndex <= length(obj.gems)
-                obj.MoveToJointConfiguration(obj.q_cam);
+                obj.MoveToJointConfiguration(obj.CamCart, obj.q_cam);
                 disp(['ABB Robot analyzing Gem ', num2str(gemIndex), ' at the camera.']);
                 pause(2);
             end
@@ -81,6 +96,7 @@ classdef ABBMovement
                     disp('ABB Robot moving to drop-off location for small Red Gem.');
                     pause(1);
                     exchangeq = obj.q_dropoff_ABB(1,:);
+                    SortCart = obj.DropCart(1);
                 elseif strcmp(color, 'red') && strcmp(GemSize,'large')
                     disp(['Gem color: ', color]);
                     disp(['Gem size: ', GemSize]);
@@ -88,6 +104,7 @@ classdef ABBMovement
                     disp('ABB Robot moving to drop-off location for large Red Gem.');
                     pause(1);
                     exchangeq = obj.q_dropoff_ABB(2,:);
+                    SortCart = obj.DropCart(2);
                 elseif strcmp(color, 'green') && strcmp(GemSize,'small')
                     disp(['Gem color: ', color]);
                     disp(['Gem size: ', GemSize]);
@@ -95,6 +112,7 @@ classdef ABBMovement
                     disp('ABB Robot moving to drop-off location for small Green Gem.');
                     pause(1);
                     exchangeq = obj.q_dropoff_ABB(3,:);
+                    SortCart = obj.DropCart(3);
                 elseif strcmp(color, 'green') && strcmp(GemSize,'large')
                     disp(['Gem color: ', color]);
                     disp(['Gem size: ', GemSize]);
@@ -102,10 +120,11 @@ classdef ABBMovement
                     disp('ABB Robot moving to drop-off location for large Green Gem.');
                     pause(1);
                     exchangeq = obj.q_dropoff_ABB(4,:);
+                    SortCart = obj.DropCart(4);
                 end
             
                 % Move to the determined exchange position
-                obj.MoveToJointConfiguration(exchangeq);
+                obj.MoveToJointConfiguration(SortCart, exchangeq);
                 % Simulate placing the gem at the exchange position
                 % obj.currentGem.isSorted = true; % Mark the gem as sorted
                 pause(2);
@@ -114,9 +133,17 @@ classdef ABBMovement
             end
         end
 
-        function MoveToJointConfiguration(obj, qValues)
+        function MoveToJointConfiguration(obj, pos, qValues)
             qCurrent = obj.robot.model.getpos();
-            path = jtraj(qCurrent, qValues, obj.steps);
+            if isequal(pos,obj.CamCart)
+                position = transl(pos(1),pos(2),pos(3))*trotx(pi/2);
+            elseif isequal(pos,obj.CurrentPos)
+                position = transl(pos(1),pos(2),pos(3));
+            else
+                position = transl(pos(1),pos(2),pos(3)+0.05);
+            end
+            qFinal=obj.robot.model.ikcon(position* trotx(pi),qValues);
+            path = jtraj(qCurrent, qFinal, obj.steps);
 
             for i = 1:obj.steps
                 if obj.eStopController.eStopEngaged

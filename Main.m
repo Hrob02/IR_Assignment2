@@ -16,12 +16,12 @@ env = SetEnvironment(figureHandle);
 
 % Create gem objects and place them in the environment
 gems = [
-    Gem([0.3824, -1.069, 0.5], 'small', 'green');
-    Gem([0.3824, -1.269, 0.5], 'large', 'red');
-    Gem([0.3824, -1.469, 0.5], 'large', 'green');
-    Gem([0.3824, -1.669, 0.5], 'small', 'red');
-    Gem([0.3824, -1.869, 0.5], 'large', 'red'); 
-    Gem([0.3824, -2.029, 0.5], 'small', 'red'); 
+    Gem([0.4, -1.2, 0.53], 'small', 'green');
+    Gem([0.4, -1.35, 0.53], 'large', 'red');
+    Gem([0.4, -1.5, 0.53], 'large', 'red');
+    Gem([0.4, -1.65, 0.53], 'small', 'red');
+    Gem([0.4, -1.8, 0.53], 'large', 'green'); 
+    Gem([0.4, -1.95, 0.53], 'small', 'red'); 
 ];
 
 % Flag Initialization

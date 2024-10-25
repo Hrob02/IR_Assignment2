@@ -16,16 +16,10 @@ classdef UR3Movement
         q_dropoff_green = [-0.5, 0, 17*pi/40, 0, 25*pi/360, -pi/2, 0];  % Dropoff for green gems
         q_dropoff_red = [-0.7, 0, 17*pi/40, 0, 25*pi/360, -pi/2, 0];    % Dropoff for red gems
         currentGem;
-        CamCart = [-0.7,-1,0.65;
-            ];
-        PickCart = [0.3824, -1.069, 0.6;
-            0.3824, -1.269, 0.6;
-            0.3824, -1.469, 0.6;
-            0.3824, -1.669, 0.6;
-            0.3824, -1.869, 0.6;
-            0.3824, -2.029, 0.5];
-        ExRedCart = [-0.7,-2,0.6];
-        ExGreenCart = [-0.7,-1.7,0.6]
+        CamCart = [-0.7,-1.2,0.65];
+        ExRedCart = [-0.67,-1.85,0.48];
+        ExGreenCart = [-0.67,-1.7,0.48];
+        initialCart;
     end
     
     methods
@@ -38,27 +32,29 @@ classdef UR3Movement
             obj.q_dropoff_green;
             obj.q_dropoff_red;
             obj.currentGem = []; % Initialize as empty
-            obj.CamCart;  % for later we should be using positon x,y,z according to assignment some small changes to logic required
-            obj.PickCart;
+            obj.CamCart;
             obj.ExRedCart;
             obj.ExGreenCart;
+            obj.initialCart;
         end
 
        function ExecuteUR3(obj, gemIndex)
+           qInitial = obj.UR3.model.getpos();
+           obj.initialCart = obj.UR3.model.fkine(qInitial).t;
             if gemIndex > 0 && gemIndex <= length(obj.gems)
                 obj.currentGem = obj.gems(gemIndex);
                 obj.PickGemUR3(gemIndex);
                 obj.AnalyzeGem(gemIndex);
                 obj.PlaceGemAtExchange(gemIndex);
             end
-            q = zeros(1, 7);
-            obj.MoveToJointConfiguration(q);
+            obj.MoveToJointConfiguration(obj.initialCart',qInitial);
         end
 
         function PickGemUR3(obj, gemIndex)
             if gemIndex > 0 && gemIndex <= length(obj.q_pickup_UR3)
-                obj.currentGem = obj.q_pickup_UR3(gemIndex);
-                obj.MoveToJointConfiguration(obj.q_pickup_UR3(gemIndex,:));
+                obj.currentGem = obj.gems(gemIndex);
+                PickCart = obj.currentGem.position;
+                obj.MoveToJointConfiguration(PickCart,obj.q_pickup_UR3(gemIndex,:));
                 disp(['UR3 Robot picking up Gem ',  num2str(gemIndex)]);
                 pause(2);  % Wait for 2 second
             end
@@ -66,7 +62,7 @@ classdef UR3Movement
 
         function AnalyzeGem(obj, gemIndex)
             if gemIndex > 0 && gemIndex <= length(obj.q_pickup_UR3)
-                obj.MoveToJointConfiguration(obj.q_cam);
+                obj.MoveToJointConfiguration(obj.CamCart, obj.q_cam);
                 disp(['UR3 Robot analyzing Gem ', num2str(gemIndex), ' at the camera.']);
                 pause(2);
             end
@@ -77,8 +73,10 @@ classdef UR3Movement
                 color = obj.currentGem.color;
                 if strcmp(color, 'red')
                     exchangeq = obj.q_dropoff_red;
+                    ExPos = obj.ExRedCart;
                 elseif strcmp(color, 'green')
                     exchangeq = obj.q_dropoff_green;
+                    ExPos = obj.ExGreenCart;
                 else
                     disp(['Unknown color detected: ', color]);
                     return;
@@ -87,7 +85,7 @@ classdef UR3Movement
                 disp(['Gem color: ', color]);
                 pause(1);
                 disp(['UR3 Robot moving to drop-off location for ', color,' Gem.']);
-                obj.MoveToJointConfiguration(exchangeq);
+                obj.MoveToJointConfiguration(ExPos, exchangeq);
                 obj.currentGem.isSorted = true; % Mark the gem as sorted
                 disp(['Gem placed at exchange position for ', color, ' gem.']);
                 obj.currentGem = []; % Clear the current gem after placing
@@ -95,11 +93,17 @@ classdef UR3Movement
             pause(2);
         end
 
-        function MoveToJointConfiguration(obj, qValues)
+        function MoveToJointConfiguration(obj, pos, qValues)
             qCurrent = obj.UR3.model.getpos();
-            path = jtraj(qCurrent, qValues, obj.steps);
-            % lastpos = obj.UR3.model.fkine(path(end,:)).T;
-            % disp(lastpos(1:3,4)')
+            if isequal(pos,obj.CamCart)
+                position = transl(pos(1),pos(2),pos(3))*trotx(pi/2);
+            elseif isequal(pos,obj.initialCart)
+                position = transl(pos(1),pos(2),pos(3));
+            else
+                position = transl(pos(1),pos(2),pos(3)+0.05);
+            end
+            qFinal=obj.UR3.model.ikcon(position* trotx(pi),qValues);
+            path = jtraj(qCurrent, qFinal, obj.steps);
 
             for i = 1:obj.steps
                 if obj.eStopController.eStopEngaged
