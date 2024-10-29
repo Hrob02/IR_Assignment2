@@ -252,7 +252,8 @@ classdef UR3Movement
                 
                 for j=1:3  % Assume plyFiles is a property of the class
                     plyFile = obj.plyFiles{j};
-                    crashDetected = collisionChecker.CheckCollision(currentTransform', plyFile);
+                    currentPos = currentTransform(1:3, 4)';
+                    crashDetected = collisionChecker.CheckCollision(currentPos, plyFile);
                     
                     if crashDetected
                         disp('Collision detected! Pausing movement.');
@@ -261,13 +262,13 @@ classdef UR3Movement
                         
                         % Move the end effector away from the collision
                         % Example logic to calculate a new position
-                        currentTransform(1) = currentTransform(1) + 0.1;  % Move in x-direction
-                        currentTransform(3) = currentTransform(3) + 0.1;  % Move in z-direction
+                        currentPos(1) = currentPos(1) + 0.1;  % Move in x-direction
+                        currentPos(3) = currentPos(3) + 0.1;  % Move in z-direction
 
                         qCurrentUpdate = obj.UR3.model.getpos();
                         
                         % Recalculate the trajectory
-                        qFinal = obj.UR3.model.ikcon(transl(currentTransform(1), currentTransform(2), currentTransform(3)), qCurrentUpdate);
+                        qFinal = obj.UR3.model.ikcon(transl(currentPos(1), currentPos(2), currentPos(3)), qCurrentUpdate);
                         path = jtraj(qCurrentUpdate, qFinal, obj.steps);
                         i = 1;  % Reset loop index to start from the beginning
                         break;  % Exit the for loop to check the new path
