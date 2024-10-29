@@ -135,6 +135,35 @@ classdef ABBMovement
             end
         end
 
+        function MoveToQJointConfiguration(obj, qValues)
+            qCurrent = obj.robot.model.getpos();  % Get current joint positions
+            path = jtraj(qCurrent, qValues, obj.steps);  % Generate a joint trajectory
+        
+            i = 1;  % Initialize the loop index
+        
+            % Loop through each step in the trajectory
+            while i <= obj.steps
+                % Check if emergency stop is engaged
+                if obj.eStopController.eStopEngaged
+                    disp('Movement halted due to emergency stop.');
+        
+                    % Wait until the emergency stop is disengaged
+                    while obj.eStopController.eStopEngaged
+                        pause(0.1);  % Introduce a small pause to avoid busy-waiting
+                    end
+                    
+                    disp('Resuming movement...');
+                end
+        
+                % Animate the robot to the current step of the trajectory
+                obj.robot.model.animate(path(i, :));
+        
+                drawnow;  % Refresh the plot
+        
+                i = i + 1;  % Increment the loop index
+            end
+        end
+
         function MoveToJointConfiguration(obj, pos, qValues)
             qCurrent = obj.robot.model.getpos();
             if isequal(pos,obj.CamCart)
