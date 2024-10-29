@@ -34,12 +34,6 @@ classdef collisionAvoidance
             else
                 crash = false; % No collision
             end
-        
-            % Optionally display the point cloud for visualization
-            hold on;
-            PtCloudTrans = pointCloud(ptCloud.Location + currentPos); % Translate point cloud to the end effector position
-            pcshow(PtCloudTrans); % Show translated point clouds
-        
             pause(0.1);
         end
     end

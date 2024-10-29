@@ -21,7 +21,7 @@ classdef UR3Movement
         ExRedCart = [-0.67,-1.85,0.48];
         ExGreenCart = [-0.67,-1.7,0.48];
         initialCart;
-        plyFiles = {'Tripod', 'tableBrown2.1x1.4x0.5m', 'tableBlue1x1x0.5m'};
+        plyFiles = {'Tripod.ply', 'tableBrown2.1x1.4x0.5m.ply', 'tableBlue1x1x0.5m.ply'};
     end
     
     methods
@@ -96,6 +96,7 @@ classdef UR3Movement
             end
             pause(2);
         end
+
         function MoveToQJointConfiguration(obj, qValues)
             qCurrent = obj.UR3.model.getpos();  % Get current joint positions
             path = jtraj(qCurrent, qValues, obj.steps);  % Generate a joint trajectory
@@ -249,8 +250,8 @@ classdef UR3Movement
 
                 collisionChecker = collisionAvoidance();  % Create an instance of the collisionAvoidance class
                 
-                for j=1:size(obj.plyFiles)  % Assume plyFiles is a property of the class
-                    plyFile = obj.plyFiles(j);
+                for j=1:3  % Assume plyFiles is a property of the class
+                    plyFile = obj.plyFiles{j};
                     crashDetected = collisionChecker.CheckCollision(currentTransform', plyFile);
                     
                     if crashDetected
