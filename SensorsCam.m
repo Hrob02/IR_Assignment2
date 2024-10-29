@@ -1,3 +1,4 @@
+%% just basic sudo stuff for sensors submission
 classdef SensorsCam
     properties
         % Camera parameters, e.g., focal length, resolution, etc.
