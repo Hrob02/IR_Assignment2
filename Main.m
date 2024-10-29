@@ -33,15 +33,15 @@ UR3Model = LinearUR3e(transl(-0.15, -1.1, 0.5) * trotz(pi/2));
 ABBModel = ABB120(transl(-1.25, -1.15, 0.5) * trotz(pi/2));
 %%
 % if isempty(a)
-a = arduino('/dev/tty.usbserial-10','Uno');
+%a = arduino('/dev/tty.usbserial-110','Uno');
 % end
 
 % Step 1: Create an instance of EStopController
 eStopController = EStopController();  % Create a shared EStopController instance
 
 % Step 2: Create instances of UR3Movement and ABBMovement with the shared EStopController
-ur3Movement = UR3Movement(gems, UR3Model, eStopController,a);  % Create UR3Movement instance
-abbMovement = ABBMovement(gems, ABBModel, eStopController,a);  % Create ABBMovement instance
+ur3Movement = UR3Movement(gems, UR3Model, eStopController);%,a);  % Create UR3Movement instance
+abbMovement = ABBMovement(gems, ABBModel, eStopController);%,a);  % Create ABBMovement instance
 
 % Step 3: Instantiate the GUI and pass the movement instances
 app = app1;  % Create an instance of your app

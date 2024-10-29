@@ -1,6 +1,6 @@
 classdef UR3Movement
     properties
-        a;
+        % a;
         gems;
         UR3;
         steps = 50; % Number of steps for the animation
@@ -25,8 +25,8 @@ classdef UR3Movement
     
     methods
         % Constructor to initialize the UR3Movement object
-        function obj = UR3Movement(gems, UR3Model, eStopController,aHardware)
-            obj.a=aHardware;
+        function obj = UR3Movement(gems, UR3Model, eStopController)%,aHardware)
+            % obj.a=aHardware;
             obj.gems = gems;
             obj.UR3 = UR3Model;
             obj.eStopController = eStopController;
@@ -95,35 +95,6 @@ classdef UR3Movement
             pause(2);
         end
 
-        function MoveToQJointConfiguration(obj, qValues)
-            qCurrent = obj.UR3.model.getpos();  % Get current joint positions
-            path = jtraj(qCurrent, qValues, obj.steps);  % Generate a joint trajectory
-        
-            i = 1;  % Initialize the loop index
-        
-            % Loop through each step in the trajectory
-            while i <= obj.steps
-                % Check if emergency stop is engaged
-                if obj.eStopController.eStopEngaged
-                    disp('Movement halted due to emergency stop.');
-        
-                    % Wait until the emergency stop is disengaged
-                    while obj.eStopController.eStopEngaged
-                        pause(0.1);  % Introduce a small pause to avoid busy-waiting
-                    end
-                    
-                    disp('Resuming movement...');
-                end
-        
-                % Animate the robot to the current step of the trajectory
-                obj.UR3.model.animate(path(i, :));
-        
-                drawnow;  % Refresh the plot
-        
-                i = i + 1;  % Increment the loop index
-            end
-        end
-
         function MoveToJointConfiguration(obj, pos, qValues)
             qCurrent = obj.UR3.model.getpos();
             if isequal(pos,obj.CamCart)
@@ -140,33 +111,33 @@ classdef UR3Movement
         
             % Loop through each step in the trajectory
             while i <= obj.steps
-                % Read the button state
-                buttonStateEStop = readDigitalPin(obj.a, "D8");
-                
-                if buttonStateEStop == 1
-                    pause(0.1); % Debounce delay (100 ms)
-                    if readDigitalPin(obj.a, "D8") == 1 % Check again to confirm E-Stop button press
-                        obj.eStopController.eStopEngaged = true; % Engage E-Stop
-                        disp('Movement halted due to emergency stop.');
-                
-                        % Wait until the emergency stop is disengaged
-                        while obj.eStopController.eStopEngaged
-                            pause(0.1);  % Small pause to avoid busy-waiting
-                            
-                            % Check the state of the resume button
-                            buttonStateResume = readDigitalPin(obj.a, "D12");  % Read resume button state
-                            
-                            if buttonStateResume == 1
-                                pause(0.1); % Debounce delay
-                                if readDigitalPin(obj.a, "D12") == 1 % Check again to confirm resume button press
-                                    obj.eStopController.eStopEngaged = false; % Disengage E-Stop
-                                end
-                            end
-                        end
-                        buttonStateEStop = 0;  
-                        disp('Resuming movement...');
-                    end
-                end
+                % % Read the button state
+                % buttonStateEStop = readDigitalPin(obj.a, "D8");
+                % 
+                % if buttonStateEStop == 1
+                %     pause(0.1); % Debounce delay (100 ms)
+                %     if readDigitalPin(obj.a, "D8") == 1 % Check again to confirm E-Stop button press
+                %         obj.eStopController.eStopEngaged = true; % Engage E-Stop
+                %         disp('Movement halted due to emergency stop.');
+                % 
+                %         % Wait until the emergency stop is disengaged
+                %         while obj.eStopController.eStopEngaged
+                %             pause(0.1);  % Small pause to avoid busy-waiting
+                % 
+                %             % Check the state of the resume button
+                %             buttonStateResume = readDigitalPin(obj.a, "D12");  % Read resume button state
+                % 
+                %             if buttonStateResume == 1
+                %                 pause(0.1); % Debounce delay
+                %                 if readDigitalPin(obj.a, "D12") == 1 % Check again to confirm resume button press
+                %                     obj.eStopController.eStopEngaged = false; % Disengage E-Stop
+                %                 end
+                %             end
+                %         end
+                %         buttonStateEStop = 0;  
+                %         disp('Resuming movement...');
+                %     end
+                % end
 
                 
                 % Check if emergency stop is engaged
@@ -184,7 +155,54 @@ classdef UR3Movement
                 % Animate the robot to the current step of the trajectory
                 obj.UR3.model.animate(path(i, :));
                 jointConfig = path(i, :);  % Get the current joint configuration
+
+                m = zeros(1, obj.steps-1);           % Manipulability measure
+                % errorValue = zeros(3, obj.steps-1);  % Velocity error
+
+                % Calculate the Jacobian
+                J = obj.UR3.model.jacob0(jointConfig);
+                J_t = J(1:3, :);
+
+                lambda = 0.1;  % damping factor
+
+                % Get the next joint configuration
+                if i < obj.steps
+                    nextJoint = path(i + 1, :);
+                    deltaT = obj.UR3.model.fkine(nextJoint).T - obj.UR3.model.fkine(jointConfig).T;
+                    xdot = deltaT(1:3, 4);
+
+                    % Calculate manipulability
+                    m(i) = sqrt(det(J_t * J_t'));  % Using the Frobenius norm  
         
+                    % Manipulability check and speed reduction
+                    if m(i) < 1e-4
+                        speedReductionFactor = 0.5;  % Reduce speed to 50%
+                        xdot = xdot * speedReductionFactor;
+                        disp(['Reducing speed at step ', num2str(i), ' due to low manipulability.']);
+                        pause(0.1)
+                        disp('Increasing allowable error and Changing Trajectory');
+                
+                        % Joint velocity calculation with damping
+                        qdot = pinv(J_t' * J_t + lambda^2 * eye(size(J_t, 2))) * J_t' * xdot;
+                        
+                        % Update the path for the next joint configuration
+                        path(i+1, :) = path(i, :) + qdot';  % Adjust based on step size
+
+                        pause(0.1);
+
+                        % Calculate velocity error
+                        % errorValue(:, i) = xdot - J_t * qdot;
+                    end
+        
+                    % Display results for debugging
+                    % disp(['Step ', num2str(i), ': Jacobian J_t =']);
+                    % disp(J_t);
+                    % disp(['Step ', num2str(i), ': xdot = ', num2str(xdot')]);
+                    % disp(['Step ', num2str(i), ': qdot = ', num2str(qdot')]);
+                    % disp(['Step ', num2str(i), ': Manipulability = ', num2str(m(i))]);
+                    % disp(['Step ', num2str(i), ': Velocity Error = ', num2str(errorValue(:, i)')]);
+                end
+
                 % Calculate and check the current and target transforms
                 targetTransform = obj.UR3.model.fkine(qValues).T;
                 currentTransform = obj.UR3.model.fkine(jointConfig).T;
