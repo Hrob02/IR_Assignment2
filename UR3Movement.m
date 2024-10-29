@@ -21,7 +21,7 @@ classdef UR3Movement
         ExRedCart = [-0.67,-1.85,0.48];
         ExGreenCart = [-0.67,-1.7,0.48];
         initialCart;
-        plyFiles = {'Tripod.ply', 'tableBrown2.1x1.4x0.5m.ply', 'tableBlue1x1x0.5m.ply'};
+        plyFiles = {'Tripod', 'tableBrown2.1x1.4x0.5m', 'tableBlue1x1x0.5m'};
     end
     
     methods

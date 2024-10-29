@@ -8,13 +8,13 @@ classdef collisionAvoidance
             obj.Tolerance;
         end
         
-        function CheckCollision(obj, EndEffectorPos, plyFile)
+        function crash = CheckCollision(obj, EndEffectorPos, plyFile)
             % Get the current position of the robot as a 3D vector
             currentPos = EndEffectorPos;
         
             % Read the PLY point cloud
-            ptCloud = pcread(plyFile); 
-            
+            ptCloud = pcread(plyFile);
+        
             % Get limits of the point cloud
             xyzLimits = [ptCloud.XLimits; ptCloud.YLimits; ptCloud.ZLimits];
         
@@ -29,13 +29,13 @@ classdef collisionAvoidance
             withinLimits = withinXlim && withinYlim && withinZlim; 
         
             if withinLimits
-                crash = true;
+                crash = true; % Collision detected
                 disp("Crash detected");
             else
-                crash = false;
+                crash = false; % No collision
             end
-            
-            % Display the point cloud for visualization (optional)
+        
+            % Optionally display the point cloud for visualization
             hold on;
             PtCloudTrans = pointCloud(ptCloud.Location + currentPos); % Translate point cloud to the end effector position
             pcshow(PtCloudTrans); % Show translated point clouds
