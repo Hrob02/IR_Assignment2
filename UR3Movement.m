@@ -248,30 +248,30 @@ classdef UR3Movement
                     obj.currentGem.attachToEndEffector(currentTransform);  % Attach the gem at the current transform
                 end
 
-                collisionChecker = collisionAvoidance();  % Create an instance of the collisionAvoidance class
+                collisionChecker = collisionAvoidance(obj.plyFiles);  % Create an instance of the collisionAvoidance class
                 
-                for j=1:3  % Assume plyFiles is a property of the class
-                    plyFile = obj.plyFiles{j};
-                    currentPos = currentTransform(1:3, 4)';
-                    crashDetected = collisionChecker.CheckCollision(currentPos, plyFile);
+                % Check for collision every few steps
+                if mod(i, 5) == 0 % Change this number as necessary
+                    currentPos = currentTransform(1:3, 4)';  % Get the position
                     
-                    if crashDetected
-                        disp('Collision detected! Pausing movement.');
-                        % Pause the movement
-                        pause(1);  % Adjust pause duration as needed
-                        
-                        % Move the end effector away from the collision
-                        % Example logic to calculate a new position
-                        currentPos(1) = currentPos(1) + 0.1;  % Move in x-direction
-                        currentPos(3) = currentPos(3) + 0.1;  % Move in z-direction
-
-                        qCurrentUpdate = obj.UR3.model.getpos();
-                        
-                        % Recalculate the trajectory
-                        qFinal = obj.UR3.model.ikcon(transl(currentPos(1), currentPos(2), currentPos(3)), qCurrentUpdate);
-                        path = jtraj(qCurrentUpdate, qFinal, obj.steps);
-                        i = 1;  % Reset loop index to start from the beginning
-                        break;  % Exit the for loop to check the new path
+                    crashDetected = false; % Initialize collision detection flag
+                    
+                    for j = 1:length(obj.plyFiles)  % Check against all point clouds
+                        crashDetected = collisionChecker.CheckCollision(currentPos, j);
+                        if crashDetected
+                            disp('Collision detected! Pausing movement.');
+                            % Move the end effector away from the collision
+                            currentPos(1) = currentPos(1) + 0.1;  % Move in x-direction
+                            currentPos(3) = currentPos(3) + 0.1;  % Move in z-direction
+                    
+                            qCurrentUpdate = obj.UR3.model.getpos();
+                            
+                            % Recalculate the trajectory
+                            qFinal = obj.UR3.model.ikcon(transl(currentPos(1), currentPos(2), currentPos(3)), qCurrentUpdate);
+                            path = jtraj(qCurrentUpdate, qFinal, obj.steps);
+                            i = 1;  % Reset loop index to start from the beginning
+                            break; % Exit the loop on first collision detected
+                        end
                     end
                 end
 
