@@ -1,5 +1,6 @@
 classdef ABBMovement
     properties
+        a;
         gems;
         robot; % Robot model object
         steps = 50; % Number of steps for the animation
@@ -26,7 +27,8 @@ classdef ABBMovement
     
     methods
         % Constructor to initialize the ABBMovement object
-        function obj = ABBMovement(gems, robotModel, eStopController)
+        function obj = ABBMovement(gems, robotModel, eStopController,aHardware)
+            obj.a=aHardware;
             obj.gems = gems;
             obj.robot = robotModel;
             obj.eStopController = eStopController;
@@ -151,6 +153,36 @@ classdef ABBMovement
             
             % Loop through each step in the trajectory
             while i <= obj.steps
+                % Read the button state
+                buttonStateEStop = readDigitalPin(obj.a, "D8");
+                
+                % Check if the button is pressed and debounce
+                if buttonStateEStop == 1
+                    pause(0.1); % Debounce delay (100 ms)
+                    if readDigitalPin(obj.a, "D8") == 1 % Check again to confirm E-Stop button press
+                        obj.eStopController.eStopEngaged = true; % Engage E-Stop
+                        disp('Movement halted due to emergency stop.');
+                
+                        % Wait until the emergency stop is disengaged
+                        while obj.eStopController.eStopEngaged
+                            pause(0.1);  % Small pause to avoid busy-waiting
+                            
+                            % Check the state of the resume button
+                            buttonStateResume = readDigitalPin(obj.a, "D12");  % Read resume button state
+                            
+                            if buttonStateResume == 1
+                                pause(0.1); % Debounce delay
+                                if readDigitalPin(obj.a, "D12") == 1 % Check again to confirm resume button press
+                                    obj.eStopController.eStopEngaged = false; % Disengage E-Stop
+                                end
+                            end
+                        end
+                        buttonStateEStop = 0;  
+                        disp('Resuming movement...');
+                    end
+                end
+
+
                 % Check if emergency stop is engaged
                 if obj.eStopController.eStopEngaged
                     disp('Movement halted due to emergency stop.');
