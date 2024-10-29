@@ -261,13 +261,13 @@ classdef UR3Movement
                         
                         % Move the end effector away from the collision
                         % Example logic to calculate a new position
-                        endEffectorPos(1) = endEffectorPos(1) + 0.1;  % Move in x-direction
-                        endEffectorPos(3) = endEffectorPos(1) + 0.1;  % Move in z-direction
+                        currentTransform(1) = currentTransform(1) + 0.1;  % Move in x-direction
+                        currentTransform(3) = currentTransform(3) + 0.1;  % Move in z-direction
 
                         qCurrentUpdate = obj.UR3.model.getpos();
                         
                         % Recalculate the trajectory
-                        qFinal = obj.UR3.model.ikcon(transl(endEffectorPos(1), endEffectorPos(2), endEffectorPos(3)), qCurrentUpdate);
+                        qFinal = obj.UR3.model.ikcon(transl(currentTransform(1), currentTransform(2), currentTransform(3)), qCurrentUpdate);
                         path = jtraj(qCurrentUpdate, qFinal, obj.steps);
                         i = 1;  % Reset loop index to start from the beginning
                         break;  % Exit the for loop to check the new path
