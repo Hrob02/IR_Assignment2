@@ -21,12 +21,14 @@ classdef UR3Movement
         ExRedCart = [-0.67,-1.85,0.48];
         ExGreenCart = [-0.67,-1.7,0.48];
         initialCart;
+        plyFiles = {'Tripod.ply', 'tableBrown2.1x1.4x0.5m.ply', 'tableBlue1x1x0.5m.ply'};
     end
     
     methods
         % Constructor to initialize the UR3Movement object
         function obj = UR3Movement(gems, UR3Model, eStopController)%,aHardware)
             % obj.a=aHardware;
+            obj.plyFiles;
             obj.gems = gems;
             obj.UR3 = UR3Model;
             obj.eStopController = eStopController;
@@ -216,7 +218,33 @@ classdef UR3Movement
                    isequal(targetTransform(1:3, 4)', exchangePositionsGreen(1:3, 4)')
                     obj.currentGem.attachToEndEffector(currentTransform);  % Attach the gem at the current transform
                 end
-        
+
+                collisionChecker = collisionAvoidance();  % Create an instance of the collisionAvoidance class
+                
+                for j=1:size(obj.plyFiles)  % Assume plyFiles is a property of the class
+                    plyFile = obj.plyFiles(j);
+                    crashDetected = collisionChecker.CheckCollision(currentTransform', plyFile);
+                    
+                    if crashDetected
+                        disp('Collision detected! Pausing movement.');
+                        % Pause the movement
+                        pause(1);  % Adjust pause duration as needed
+                        
+                        % Move the end effector away from the collision
+                        % Example logic to calculate a new position
+                        endEffectorPos(1) = endEffectorPos(1) + 0.1;  % Move in x-direction
+                        endEffectorPos(3) = endEffectorPos(1) + 0.1;  % Move in z-direction
+
+                        qCurrentUpdate = obj.UR3.model.getpos();
+                        
+                        % Recalculate the trajectory
+                        qFinal = obj.UR3.model.ikcon(transl(endEffectorPos(1), endEffectorPos(2), endEffectorPos(3)), qCurrentUpdate);
+                        path = jtraj(qCurrentUpdate, qFinal, obj.steps);
+                        i = 1;  % Reset loop index to start from the beginning
+                        break;  % Exit the for loop to check the new path
+                    end
+                end
+
                 drawnow;  % Refresh the plot
         
                 i = i + 1;  % Increment the loop index

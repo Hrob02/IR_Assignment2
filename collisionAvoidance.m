@@ -1,56 +1,46 @@
 classdef collisionAvoidance
     properties
-        % Define any necessary properties here
+        Tolerance = 0.05; % Define a tolerance for collision detection
     end
     
     methods
         function obj = collisionAvoidance()
-            % Constructor for the CollisionAvoidance class
+            obj.Tolerance;
         end
         
-        function crash = CheckCollision(obj, robot, xyzLimits, plyFile, positionxyz)
+        function CheckCollision(obj, EndEffectorPos, plyFile)
             % Get the current position of the robot as a 3D vector
-            currentPos = robot.fkine(robot.getpos).t; 
-
-            % Check if the current position is within specified limits
-            withinXlim = (currentPos(1) >= xyzLimits(1, 1)) && (currentPos(1) <= xyzLimits(1, 2));
-            withinYlim = (currentPos(2) >= xyzLimits(2, 1)) && (currentPos(2) <= xyzLimits(2, 2));
-            withinZlim = (currentPos(3) >= xyzLimits(3, 1)) && (currentPos(3) <= xyzLimits(3, 2));
-
+            currentPos = EndEffectorPos;
+        
+            % Read the PLY point cloud
+            ptCloud = pcread(plyFile); 
+            
+            % Get limits of the point cloud
+            xyzLimits = [ptCloud.XLimits; ptCloud.YLimits; ptCloud.ZLimits];
+        
+            % Check if the current position is within specified limits with tolerance
+            withinXlim = (currentPos(1) >= (xyzLimits(1, 1) - obj.Tolerance)) && ...
+                          (currentPos(1) <= (xyzLimits(1, 2) + obj.Tolerance));
+            withinYlim = (currentPos(2) >= (xyzLimits(2, 1) - obj.Tolerance)) && ...
+                          (currentPos(2) <= (xyzLimits(2, 2) + obj.Tolerance));
+            withinZlim = (currentPos(3) >= (xyzLimits(3, 1) - obj.Tolerance)) && ...
+                          (currentPos(3) <= (xyzLimits(3, 2) + obj.Tolerance));
+        
             withinLimits = withinXlim && withinYlim && withinZlim; 
-
+        
             if withinLimits
                 crash = true;
-                disp("Crash");
+                disp("Crash detected");
             else
                 crash = false;
             end
             
-            % Validate position input
-            if size(positionxyz, 2) ~= 3
-                error('Invalid position input. Ensure format is [x, y, z]');
-            end
-            
-            hold on
-
-            % Reading PLY point clouds
-            ptCloud = pcread(plyFile); 
-            PtCloudTrans = pointCloud(ptCloud.Location + positionxyz); % Translate point clouds
-
+            % Display the point cloud for visualization (optional)
+            hold on;
+            PtCloudTrans = pointCloud(ptCloud.Location + currentPos); % Translate point cloud to the end effector position
             pcshow(PtCloudTrans); % Show translated point clouds
-
-            % Update xyzLimits with point cloud limits
-            xyzLimits = [PtCloudTrans.XLimits; PtCloudTrans.YLimits; PtCloudTrans.ZLimits];
-
-            % Optionally place the object at the new position
-            % obj.PlaceObject(plyFile, positionxyz);
-
+        
             pause(0.1);
         end
-        
-        % function PlaceObject(~, plyFile, positionxyz)
-        %     % Your existing PlaceObject implementation
-        %     % Add the implementation details here as needed
-        % end
     end
 end
