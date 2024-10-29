@@ -49,6 +49,7 @@ app.initializeAppWithInstances(ur3Movement, abbMovement, eStopController);  % Pa
 
 %% Main loop using the instances from the app
 pause(5);
+
 for i = 1:length(gems)
     % Execute the movement using the instances stored in the app
     app.UR3MovementInst.ExecuteUR3(i);
@@ -56,4 +57,8 @@ for i = 1:length(gems)
 end
 
 
-%%
+
+
+
+
+
